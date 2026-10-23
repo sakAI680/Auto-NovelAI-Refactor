@@ -1,3 +1,4 @@
+import { m as uiMessage, textNode } from "./i18n.js";
 // ============================================================
 // 生图队列浮动窗口: 查看通道状态 / 排队任务, 取消 / 调整顺序 / 停止
 // 数据来源: SSE queue:update 事件 (app.js 转发到 bus), 打开时主动拉取一次
@@ -52,9 +53,9 @@ function laneNode(w) {
   const desc = runningTask ? `: ${runningTask.label}` : "";
   return el("div", { class: `queue-lane lane-${w.status}` }, [
     el("span", { class: "queue-lane-icon", text: icon }),
-    el("span", { class: "queue-lane-name", text: `通道 ${w.index + 1}` }),
-    el("span", { class: "queue-lane-token", text: w.token || "未配置 Token" }),
-    el("span", { class: "queue-lane-status", text: text + desc }),
+    el("span", { class: "queue-lane-name", text: uiMessage("通道 {0}", w.index + 1) }),
+    el("span", { class: "queue-lane-token", text: uiMessage(w.token || "未配置 Token") }),
+    el("span", { class: "queue-lane-status", text: uiMessage("{0}{1}", uiMessage(text), desc) }),
   ]);
 }
 
@@ -62,15 +63,15 @@ function laneNode(w) {
 
 function pendingTaskNode(t, idx, total) {
   const btns = [];
-  btns.push(el("button", { class: "qbtn", text: "⬆", title: "上移", disabled: idx === 0 ? "true" : null, onclick: () => reorder(t.id, "up") }));
-  btns.push(el("button", { class: "qbtn", text: "⬇", title: "下移", disabled: idx === total - 1 ? "true" : null, onclick: () => reorder(t.id, "down") }));
-  btns.push(el("button", { class: "qbtn qbtn-top", text: "⤒", title: "移到最前", disabled: idx === 0 ? "true" : null, onclick: () => reorder(t.id, "top") }));
-  btns.push(el("button", { class: "qbtn qbtn-danger", text: "✖", title: "取消任务", onclick: () => cancelTask(t.id) }));
+  btns.push(el("button", { class: "qbtn", text: "⬆", title: uiMessage("上移"), disabled: idx === 0 ? "true" : null, onclick: () => reorder(t.id, "up") }));
+  btns.push(el("button", { class: "qbtn", text: "⬇", title: uiMessage("下移"), disabled: idx === total - 1 ? "true" : null, onclick: () => reorder(t.id, "down") }));
+  btns.push(el("button", { class: "qbtn qbtn-top", text: "⤒", title: uiMessage("移到最前"), disabled: idx === 0 ? "true" : null, onclick: () => reorder(t.id, "top") }));
+  btns.push(el("button", { class: "qbtn qbtn-danger", text: "✖", title: uiMessage("取消任务"), onclick: () => cancelTask(t.id) }));
   return el("div", { class: "queue-task" }, [
     el("span", { class: "queue-task-pos", text: String(idx + 1) }),
     el("div", { class: "queue-task-main" }, [
       el("div", { class: "queue-task-label", text: t.label, title: t.label }),
-      el("div", { class: "queue-task-meta", text: `${t.name} · 已等待 ${Math.round(t.waited || 0)} 秒` }),
+      el("div", { class: "queue-task-meta", text: uiMessage("{0} · 已等待 {1} 秒", uiMessage(t.name), Math.round(t.waited || 0)) }),
     ]),
     el("div", { class: "queue-task-btns" }, btns),
   ]);
@@ -81,10 +82,10 @@ function runningTaskNode(t) {
     el("span", { class: "queue-task-pos", text: "▶" }),
     el("div", { class: "queue-task-main" }, [
       el("div", { class: "queue-task-label", text: t.label, title: t.label }),
-      el("div", { class: "queue-task-meta", text: `${t.name} · 通道 ${(t.worker ?? 0) + 1} · ${fmtAgo(t.started_at)}开始` }),
+      el("div", { class: "queue-task-meta", text: uiMessage("{0} · 通道 {1} · {2}开始", uiMessage(t.name), (t.worker ?? 0) + 1, uiMessage(fmtAgo(t.started_at))) }),
     ]),
     el("div", { class: "queue-task-btns" }, [
-      el("button", { class: "qbtn qbtn-danger", text: "⏹", title: "停止该任务", onclick: () => stopTask(t.id) }),
+      el("button", { class: "qbtn qbtn-danger", text: "⏹", title: uiMessage("停止该任务"), onclick: () => stopTask(t.id) }),
     ]),
   ]);
 }
@@ -97,7 +98,7 @@ function historyNode(t) {
     el("span", { class: "queue-task-pos", text: "·" }),
     el("div", { class: "queue-task-main" }, [
       el("div", { class: "queue-task-label", text: t.label, title: t.label }),
-      el("div", { class: "queue-task-meta", text: `${icon} · ${meta.join(" · ")}` }),
+      el("div", { class: "queue-task-meta", text: uiMessage([icon, ...meta].map((_, i) => `{${i}}`).join(" · "), ...[icon, ...meta].map((part) => uiMessage(part))) }),
     ]),
   ]);
 }
@@ -112,30 +113,30 @@ function render() {
 
   body.innerHTML = "";
   body.append(
-    el("div", { class: "queue-section-title", text: `🛤 执行通道 (Token ${q.token_count ?? 0} 个 → 通道 ${q.worker_count ?? 0} 条)` }),
+    el("div", { class: "queue-section-title", text: uiMessage("🛤 执行通道 (Token {0} 个 → 通道 {1} 条)", q.token_count ?? 0, q.worker_count ?? 0) }),
   );
   if ((q.workers || []).length) {
     const lanes = el("div", { class: "queue-lanes" });
     q.workers.forEach((w) => lanes.append(laneNode(w)));
     body.append(lanes);
   } else {
-    body.append(el("div", { class: "muted", style: "padding:4px 2px 8px;", text: "尚未启动通道" }));
+    body.append(el("div", { class: "muted", style: "padding:4px 2px 8px;", text: uiMessage("尚未启动通道") }));
   }
 
   const tasks = q.tasks || [];
   const running = tasks.filter((t) => t.status === "running");
   const pending = tasks.filter((t) => t.status === "pending");
 
-  body.append(el("div", { class: "queue-section-title", text: `⚙️ 运行中 (${running.length}) / 排队 (${pending.length})` }));
+  body.append(el("div", { class: "queue-section-title", text: uiMessage("⚙️ 运行中 ({0}) / 排队 ({1})", running.length, pending.length) }));
   if (!running.length && !pending.length) {
-    body.append(el("div", { class: "queue-empty", text: "队列为空 🌸 提交生图任务后会显示在这里" }));
+    body.append(el("div", { class: "queue-empty", text: uiMessage("队列为空 🌸 提交生图任务后会显示在这里") }));
   } else {
     running.forEach((t) => body.append(runningTaskNode(t)));
     pending.forEach((t, i) => body.append(pendingTaskNode(t, i, pending.length)));
     if (pending.length) {
       body.append(
         el("div", { class: "queue-clear-row" }, [
-          el("button", { class: "btn btn-sm btn-danger", text: "🗑 清空排队", onclick: clearQueue }),
+          el("button", { class: "btn btn-sm btn-danger", text: uiMessage("🗑 清空排队"), onclick: clearQueue }),
         ]),
       );
     }
@@ -143,7 +144,7 @@ function render() {
 
   const history = (q.history || []).slice(0, 8);
   if (history.length) {
-    body.append(el("div", { class: "queue-section-title", text: "🕘 最近任务" }));
+    body.append(el("div", { class: "queue-section-title", text: uiMessage("🕘 最近任务") }));
     history.forEach((t) => body.append(historyNode(t)));
   }
 }
@@ -176,14 +177,14 @@ function open() {
   overlay = el("div", { class: "queue-overlay" });
   const modal = el("div", { class: "card queue-modal" }, [
     el("div", { class: "card-title queue-modal-title" }, [
-      document.createTextNode("🚦 生图队列"),
+      textNode(uiMessage("🚦 生图队列")),
       el("div", { style: "margin-left:auto;display:flex;gap:6px;" }, [
-        el("button", { class: "mini-btn", text: "刷新", onclick: refresh }),
+        el("button", { class: "mini-btn", text: uiMessage("刷新"), onclick: refresh }),
         el("button", { class: "mini-btn", text: "✕", onclick: close }),
       ]),
     ]),
-    el("div", { class: "queue-modal-body" }, [el("div", { class: "queue-empty", text: "加载中..." })]),
-    el("div", { class: "queue-modal-foot muted", text: "仅 NovelAI 生成类任务进入队列 (生图 / 导演工具 / 插件生图); 每个任务完成后该通道独立冷却设置中的冷却时间" }),
+    el("div", { class: "queue-modal-body" }, [el("div", { class: "queue-empty", text: uiMessage("加载中...") })]),
+    el("div", { class: "queue-modal-foot muted", text: uiMessage("仅 NovelAI 生成类任务进入队列 (生图 / 导演工具 / 插件生图); 每个任务完成后该通道独立冷却设置中的冷却时间") }),
   ]);
   overlay.append(modal);
   overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });

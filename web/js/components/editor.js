@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute } from "../i18n.js";
 // ============================================================
 // 图生图画布编辑器: 画笔 / 蒙版 / 裁剪重绘 / 缩放视图
 // ============================================================
@@ -75,7 +76,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   const doodleCanvas = el("canvas", { style: "display:none;" });
   const compositeCanvas = el("canvas");
   const ctx = (c) => c.getContext("2d");
-  const placeholder = el("div", { class: "editor-placeholder", html: "🖼️ 上传基础图片后开始编辑<br/><span class='muted'>支持图生图 / 局部重绘 / 涂鸦重绘</span>" });
+  const placeholder = el("div", { class: "editor-placeholder", html: uiMessage("🖼️ 上传基础图片后开始编辑<br/><span class='muted'>支持图生图 / 局部重绘 / 涂鸦重绘</span>") });
   canvasWrap.append(placeholder);
 
   /** 纯计算: 某张图会被居中裁剪成什么尺寸 (与 setupCanvases 用同一套 cropToAlign64, 结果必然一致) */
@@ -344,7 +345,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
 
     const placed = [];
     for (const f of frames) {
-      const bw = c.measureText(f.text).width + padX * 2;
+      const bw = c.measureText(String(uiMessage(f.text))).width + padX * 2;
       const r = f.rect;
       const xr = r.x + r.w - bw;   // 与框右上角对齐
       // 上下两条边线之外优先 (最自然, 也最不容易互相挤); 左右两条边线之外只在环带够宽时才有位置
@@ -417,7 +418,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
       c.fillStyle = "rgba(0, 0, 0, 0.72)";
       c.fill();
       c.fillStyle = f.color;
-      c.fillText(f.text, box.x + bw - padX, box.y + bh / 2);
+      c.fillText(String(uiMessage(f.text)), box.x + bw - padX, box.y + bh / 2);
     }
     c.restore();
   }
@@ -1062,8 +1063,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
       const r = cropDrag.rect;
       const inner = innerCropRect(r);
       const grown = expandedCropRect(r);
-      shapeSizeLabel.textContent =
-        `外框 ${r.w} × ${r.h} · 内框 ${innerSizeText(inner)} · 内缩 ${state.cropInset} · 生成 ${grown.w} × ${grown.h}`;
+      setText(shapeSizeLabel, uiMessage("外框 {0} × {1} · 内框 {2} · 内缩 {3} · 生成 {4} × {5}", r.w, r.h, innerSizeText(inner), state.cropInset, grown.w, grown.h));
     } else {
       const w = Math.round(Math.abs(d.cx - d.sx));
       const h = Math.round(Math.abs(d.cy - d.sy));
@@ -1231,14 +1231,14 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
       elSvg("path", { d: "M3 3l18 18M21 3L3 21" }),
     ]),
   );
-  removeOverlayBtn.title = "移除图片并清空绘制";
+  setAttribute(removeOverlayBtn, "title", uiMessage("移除图片并清空绘制"));
   removeOverlayBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     clearImage();
   });
 
   // 右上角还原按钮 (移除按钮左侧): 复位滚轮缩放的默认位置与大小
-  const restoreBtn = el("button", { class: "editor-restore-btn", title: "还原默认位置和大小", style: "display:none;" });
+  const restoreBtn = el("button", { class: "editor-restore-btn", title: uiMessage("还原默认位置和大小"), style: "display:none;" });
   restoreBtn.append(
     elSvg("svg", { viewBox: "0 0 24 24", width: 13, height: 13, fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" }, [
       elSvg("path", { d: "M3 12a9 9 0 1 0 3-6.7L3 8" }),
@@ -1293,7 +1293,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   function segGroup(options, cur, onPick) {
     const group = el("div", { class: "opt-group ed-seg" });
     options.forEach((m) => {
-      const item = el("label", { class: "opt-item" + (m === cur ? " selected" : ""), text: m });
+      const item = el("label", { class: "opt-item" + (m === cur ? " selected" : ""), text: uiMessage(m) });
       item.addEventListener("click", () => {
         $$(".opt-item", group).forEach((x) => x.classList.remove("selected"));
         item.classList.add("selected");
@@ -1332,7 +1332,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   for (const [group, tool, label, tip] of TOOL_OPTIONS) {
     const item = el("label", {
       class: "opt-item" + (tool === state.tool ? " selected" : ""),
-      text: label,
+      text: uiMessage(label),
       "data-tool": tool,
       title: tip,
     });
@@ -1371,20 +1371,20 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   // 颜色只对涂鸦重绘有意义 (遮罩层固定灰色: 后端只看 alpha, 颜色不含语义)。
   // 这块不再单独占一行, 而是并进「Square Brush」那一行 (见下面的 shapeColorRow)。
   const colorWrap = el("label", { class: "ed-color-inline" }, [
-    el("span", { class: "ed-color-label", text: "颜色" }),
+    el("span", { class: "ed-color-label", text: uiMessage("颜色") }),
     colorInput,
   ]);
-  colorWrap.title = "涂鸦笔刷的颜色 (仅涂鸦重绘使用; 局部重绘的遮罩只看覆盖范围, 颜色无语义)";
+  setAttribute(colorWrap, "title", uiMessage("涂鸦笔刷的颜色 (仅涂鸦重绘使用; 局部重绘的遮罩只看覆盖范围, 颜色无语义)"));
   // 大小滑条: 同时控制画笔和橡皮。单位是**格数** (4~50), 边长 = 该值 × 8 像素 ——
   // 与官网一致: 大小 4 -> 32px, 大小 50 -> 400px。
   const sizeCtl = sliderRow({ min: BRUSH_MIN, max: BRUSH_MAX, step: 1, value: state.brushSize });
   const sizeRow = el("div", { class: "ed-size-row" }, [
-    el("span", { class: "ed-color-label", text: "大小" }),
+    el("span", { class: "ed-color-label", text: uiMessage("大小") }),
     sizeCtl.node,
   ]);
   const refreshSizeTip = () => {
     const n = state.brushSize;
-    sizeRow.title = `笔刷大小 = ${n} 格, 即边长 ${n * MASK_CELL} × ${n * MASK_CELL} 像素 (取值范围 ${BRUSH_MIN}~${BRUSH_MAX})`;
+    setAttribute(sizeRow, "title", uiMessage("笔刷大小 = {0} 格, 即边长 {1} × {2} 像素 (取值范围 {3}~{4})", n, n * MASK_CELL, n * MASK_CELL, BRUSH_MIN, BRUSH_MAX));
   };
   refreshSizeTip();
   sizeCtl.input.addEventListener("input", () => {
@@ -1409,7 +1409,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
     el("label", { class: "ed-square-label" }, [squareChk, el("span", { text: "Square Brush" })]),
     colorWrap,
   ]);
-  shapeColorRow.title = "Square Brush: 勾选 = 方形笔刷 (边长 = 大小 × 8 像素), 取消 = 圆形 (四角会随大小增大而挖掉更多格子)";
+  setAttribute(shapeColorRow, "title", uiMessage("Square Brush: 勾选 = 方形笔刷 (边长 = 大小 × 8 像素), 取消 = 圆形 (四角会随大小增大而挖掉更多格子)"));
   // 内缩 a 滑条: 紧跟在选区工具 (矩形/椭圆/套索/裁剪) 下面, 选中「▣ 裁剪」后一眼就能看到
   const cropInsetCtl = sliderRow({ min: CROP_MIN_INSET, max: CROP_MAX_INSET, step: CROP_INSET_STEP, value: state.cropInset });
   cropInsetCtl.node.style.flex = "1";
@@ -1424,17 +1424,17 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
     renderComposite();
   });
   const cropInsetRow = el("div", { class: "ed-size-row ed-inset-row" }, [
-    el("span", { class: "ed-color-label", text: "内缩" }),
+    el("span", { class: "ed-color-label", text: uiMessage("内缩") }),
     cropInsetCtl.node,
   ]);
-  cropInsetRow.title = "内侧框相对外侧框向内缩进的像素数 a (32-96, 步长 8); 这段环带只作为重绘上下文, 画笔涂不到";
+  setAttribute(cropInsetRow, "title", uiMessage("内侧框相对外侧框向内缩进的像素数 a (32-96, 步长 8); 这段环带只作为重绘上下文, 画笔涂不到"));
 
   // ---- 裁剪重绘 (选中「▣ 裁剪」即启用, 仅局部重绘模式): 沿外框裁剪重绘, 画笔只能在内缩 a 的内框里画 ----
   // 这一块 (标题 + 📏 选框尺寸提示行) 整体挂在 brushSec 里、「选区工具」下方: 选中裁剪后顺着往下就是
   // "内缩 a" 与它算出来的外框/内框尺寸, 一条线读下来, 不用回头看面板顶部。
   // 8x8 网格说明 + 上传图片被居中裁剪的提示 (每次都让用户知道"画布到底被动了什么")
   brushSec = el("div", { class: "ed-sec ed-brush-sec" }, [
-    el("div", { class: "ed-sec-title", text: "🖍️ 画笔 / 橡皮 / 选区" }),
+    el("div", { class: "ed-sec-title", text: uiMessage("🖍️ 画笔 / 橡皮 / 选区") }),
     toolGroup,
     sizeRow,        // 大小: 格数 (4~50), 边长 = 值 × 8 像素
     shapeColorRow,  // Square Brush + 颜色 (同一行; 颜色仅涂鸦重绘可见)
@@ -1520,13 +1520,13 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
     updateHistoryBtns();
   }
 
-  const undoBtn = el("button", { class: "btn btn-sm btn-ghost", text: "↩️ 撤销", title: "撤销上一步绘制 (Ctrl+Z)" });
+  const undoBtn = el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("↩️ 撤销"), title: uiMessage("撤销上一步绘制 (Ctrl+Z)") });
   undoBtn.addEventListener("click", undoHistory);
-  const redoBtn = el("button", { class: "btn btn-sm btn-ghost", text: "↪️ 恢复", title: "恢复被撤销的绘制 (Ctrl+Y)" });
+  const redoBtn = el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("↪️ 恢复"), title: uiMessage("恢复被撤销的绘制 (Ctrl+Y)") });
   redoBtn.addEventListener("click", redoHistory);
   updateHistoryBtns();
 
-  const clearBtn = el("button", { class: "btn btn-sm btn-ghost", text: "🗑️ 清空绘制" });
+  const clearBtn = el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("🗑️ 清空绘制") });
   clearBtn.addEventListener("click", () => {
     pushHistory([maskCanvas, doodleCanvas]);
     ctx(maskCanvas).clearRect(0, 0, maskCanvas.width, maskCanvas.height);
@@ -1535,7 +1535,7 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   });
 
   // 全屏编辑: 使用覆盖整个页面的遮罩层 (不依赖 Fullscreen API, 更可靠)
-  const fullscreenBtn = el("button", { class: "btn btn-sm", text: "⛶ 全屏编辑" });
+  const fullscreenBtn = el("button", { class: "btn btn-sm", text: uiMessage("⛶ 全屏编辑") });
   let overlay = null;
 
   function closeFullscreen() {
@@ -1553,8 +1553,8 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
     if (overlay) return;
     overlay = el("div", { class: "editor-overlay" });
     const header = el("div", { class: "overlay-header" }, [
-      el("span", { class: "overlay-title", text: "🎨 全屏编辑" }),
-      el("button", { class: "btn btn-sm btn-danger", text: "✖ 关闭", onclick: closeFullscreen }),
+      el("span", { class: "overlay-title", text: uiMessage("🎨 全屏编辑") }),
+      el("button", { class: "btn btn-sm btn-danger", text: uiMessage("✖ 关闭"), onclick: closeFullscreen }),
     ]);
     const bodyRow = el("div", { class: "overlay-body" });
     overlay.append(header, bodyRow);
@@ -1599,13 +1599,14 @@ export function imageEditor(container, { onChange, onImageLoad } = {}) {
   updateBrushSection();
   updateRemoveBtn();
   tools.append(
-    el("div", { class: "ed-sec" }, [el("div", { class: "ed-sec-title", text: "🎨 重绘模式" }), modeGroup]),
+    el("div", { class: "ed-sec" }, [el("div", { class: "ed-sec-title", text: uiMessage("🎨 重绘模式") }), modeGroup]),
     brushSec,     // 画笔 / 橡皮 / 选区 + 内缩 a + ✂️ 裁剪重绘 (后两者仅局部重绘模式下、选中「▣ 裁剪」时可见)
     historyRow,
     actionsRow,
   );
   wrap.append(canvasWrap, tools);
   container.append(wrap);
+  document.addEventListener("anr:language", () => { if (wrap.isConnected) renderComposite(); });
 
   /**
    * 导出蒙版。绘制层 (遮罩 / 涂鸦) 与画布同尺寸, 且只含 8x8 网格上的实心方块,

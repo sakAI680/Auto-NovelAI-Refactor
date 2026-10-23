@@ -1,3 +1,4 @@
+import { m as uiMessage, formatMessage, setText } from "../i18n.js";
 // ============================================================
 // 插件视图: 插件商店 + 单个插件的独立页面
 // ============================================================
@@ -33,6 +34,7 @@ function runAllShowIfNow() {
 }
 // 分布图重绘函数集: 主题切换 (data-theme) 时全部重绘
 const chartRedrawAll = [];
+document.addEventListener("anr:language", () => chartRedrawAll.forEach((redraw) => redraw()));
 let chartThemeBound = false;
 function bindChartThemeObserver() {
   if (chartThemeBound) return;
@@ -105,11 +107,11 @@ function ensurePreviewBox(jobId, jobName = "") {
   }
   if (!parent) return null;
   box = el("div", { id, class: "plugin-preview hidden" });
-  const img = el("img", { class: "plugin-preview-img", alt: "预览" });
+  const img = el("img", { class: "plugin-preview-img", alt: uiMessage("预览") });
   img.addEventListener("click", () => {
     if (!img.src) return;
     const overlay = el("div", { class: "img-max-overlay" }, [
-      el("img", { class: "img-max-content", src: img.src, alt: "预览" }),
+      el("img", { class: "img-max-content", src: img.src, alt: uiMessage("预览") }),
     ]);
     overlay.addEventListener("click", () => overlay.remove());
     document.body.append(overlay);
@@ -152,7 +154,7 @@ bus.on("job:done", (ev) => {
   const info = target ? target.querySelector(".info-box") : null;
   if (info) {
     // 无论有无消息都更新输出区, 避免一直停留在 "🚀 正在执行..."
-    info.textContent = "✅ " + (msg || "处理完成");
+    setText(info, uiMessage("✅ {0}", uiMessage(msg || "处理完成")));
   }
   if (msg && !info) {
     // 无输出区 (如配置保存) 时用右上角通知展示结果
@@ -195,7 +197,7 @@ bus.on("job:done", (ev) => {
           btn = el("button", {
             class: "btn btn-sm btn-file open-save-dir-btn",
             type: "button",
-            text: "📂 打开保存目录",
+            text: uiMessage("📂 打开保存目录"),
           });
           btn.addEventListener("click", async () => {
             try { await openDir(btn.dataset.dir || ""); } catch {}
@@ -221,7 +223,7 @@ bus.on("job:failed", (ev) => {
   if (previewBox) previewBox.classList.remove("generating");
   if (target) {
     const info = target.querySelector(".info-box");
-    if (info) info.textContent = "❌ " + (ev.error || "任务失败");
+    if (info) setText(info, uiMessage("❌ {0}", uiMessage(ev.error || "任务失败")));
   } else {
     toast("❌ " + (ev.error || "任务失败"), "error");
   }
@@ -235,13 +237,13 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["🛒 插件商店", el("span", { class: "sub", text: "在线安装 / 卸载 / 启停插件" })]),
+    el("h2", {}, [uiMessage("🛒 插件商店"), el("span", { class: "sub", text: uiMessage("在线安装 / 卸载 / 启停插件") })]),
   );
 
   const outBox = el("div", { class: "info-box", style: "margin-bottom:12px;" });
 
   const table = el("table", { class: "store-table" }, [
-    el("thead", {}, [el("tr", {}, ["插件", "描述", "作者", "状态", "操作"].map((h) => el("th", { text: h })))]),
+    el("thead", {}, [el("tr", {}, ["插件", "描述", "作者", "状态", "操作"].map((h) => el("th", { text: uiMessage(h) })))]),
     el("tbody"),
   ]);
   const tbody = table.querySelector("tbody") || table.children[1];
@@ -254,15 +256,15 @@ export async function render(container, ctx) {
     const rows = S.app.plugin_rows;
     if (!rows) {
       // 行数据异步加载中
-      tbody.append(el("tr", {}, [el("td", { colspan: 5, class: "muted", style: "text-align:center;padding:22px;", text: "⏳ 正在加载插件列表..." })]));
+      tbody.append(el("tr", {}, [el("td", { colspan: 5, class: "muted", style: "text-align:center;padding:22px;", text: uiMessage("⏳ 正在加载插件列表...") })]));
     } else {
       (rows).forEach((r) => {
         const pend = pendingMap.get(r.name);
         const disp = pend === "disabled" ? "已禁用" : pend === "enabled" ? "已启用" : r.status;
-        const pill = el("span", { class: `pill ${pend ? "pending" : statusClass(r.status)}`, text: disp + (pend ? " ⏳" : "") });
+        const pill = el("span", { class: `pill ${pend ? "pending" : statusClass(r.status)}`, text: uiMessage("{0}{1}", uiMessage(disp), pend ? " ⏳" : "") });
         const tr = el("tr", {}, [
           el("td", { text: r.name }),
-          el("td", { html: markdownToHtml(r.description || "-") }),
+          el("td", { html: formatMessage(uiMessage(r.description || "-"), markdownToHtml) }),
           el("td", { html: markdownToHtml(r.author || "-") }),
           el("td", {}, [pill]),
           el("td", {}, [actionButtons(r, outBox)]),
@@ -274,7 +276,7 @@ export async function render(container, ctx) {
     if (applyBtn) {
       const hasPending = pendingMap.size > 0;
       applyBtn.disabled = !hasPending;
-      applyBtn.textContent = hasPending ? `🔄 应用更改 (${pendingMap.size})` : "🔄 应用更改";
+      setText(applyBtn, hasPending ? uiMessage("🔄 应用更改 ({0})", pendingMap.size) : uiMessage("🔄 应用更改"));
     }
   }
 
@@ -282,14 +284,14 @@ export async function render(container, ctx) {
     const wrap = el("div", { class: "row-actions" });
     const status = row.status;
     if (status === "未安装") {
-      wrap.append(el("button", { class: "btn btn-sm btn-primary", text: "⬇️ 安装", onclick: () => storeAction("/api/plugins/install", row.name, outBox) }));
+      wrap.append(el("button", { class: "btn btn-sm btn-primary", text: uiMessage("⬇️ 安装"), onclick: () => storeAction("/api/plugins/install", row.name, outBox) }));
     } else {
       const effDisabled = pendingMap.get(row.name) === "disabled" || (pendingMap.get(row.name) !== "enabled" && status === "已禁用");
-      wrap.append(el("button", { class: "btn btn-sm", text: "🔄 更新", onclick: () => storeAction("/api/plugins/install", row.name, outBox) }));
-      wrap.append(el("button", { class: "btn btn-sm btn-danger", text: "🗑️ 删除", onclick: () => storeAction("/api/plugins/uninstall", row.name, outBox) }));
-      wrap.append(el("button", { class: "btn btn-sm", text: effDisabled ? "✅ 启用" : "🔀 禁用", onclick: () => toggleRow(row, outBox, effDisabled) }));
+      wrap.append(el("button", { class: "btn btn-sm", text: uiMessage("🔄 更新"), onclick: () => storeAction("/api/plugins/install", row.name, outBox) }));
+      wrap.append(el("button", { class: "btn btn-sm btn-danger", text: uiMessage("🗑️ 删除"), onclick: () => storeAction("/api/plugins/uninstall", row.name, outBox) }));
+      wrap.append(el("button", { class: "btn btn-sm", text: effDisabled ? uiMessage("✅ 启用") : uiMessage("🔀 禁用"), onclick: () => toggleRow(row, outBox, effDisabled) }));
       if (pendingMap.has(row.name)) {
-        wrap.append(el("button", { class: "btn btn-sm btn-primary", text: "🔄 应用", onclick: () => applyChanges(outBox) }));
+        wrap.append(el("button", { class: "btn btn-sm btn-primary", text: uiMessage("🔄 应用"), onclick: () => applyChanges(outBox) }));
       }
     }
     return wrap;
@@ -301,12 +303,12 @@ export async function render(container, ctx) {
     renderRows();
     try {
       const res = await post("/api/plugins/toggle", { name: row.name });
-      outBox.textContent = res.message;
+      setText(outBox, uiMessage(res.message));
       toast(res.message, "info");
     } catch (e) {
       pendingMap.delete(row.name);
       renderRows();
-      outBox.textContent = "❌ " + e.message;
+      setText(outBox, uiMessage("❌ " + e.message));
       toast(e.message, "error");
     }
   }
@@ -314,10 +316,10 @@ export async function render(container, ctx) {
   async function applyChanges(outBox) {
     try {
       const res = await post("/api/plugins/apply", {});
-      outBox.textContent = res.message;
+      setText(outBox, uiMessage(res.message));
       toast("后端重启中, 正在刷新界面...", "info");
     } catch (e) {
-      outBox.textContent = "❌ " + e.message;
+      setText(outBox, uiMessage("❌ " + e.message));
       toast(e.message, "error");
       // 后端明确回了 HTTP 错误 = 没在重启: 不再盲目刷新, 让错误留在页面上 (旧代码 ~400ms 后 reload 会把提示冲掉)
       if (!(e instanceof TypeError)) return;
@@ -327,10 +329,10 @@ export async function render(container, ctx) {
   }
 
   // 手动联网检查插件更新 (插件列表不再自动检查, 结果写入状态列)
-  const checkBtn = el("button", { id: "store-check-btn", class: "btn btn-sm", type: "button", text: "🔍 检查更新" });
+  const checkBtn = el("button", { id: "store-check-btn", class: "btn btn-sm", type: "button", text: uiMessage("🔍 检查更新") });
   checkBtn.addEventListener("click", async () => {
     checkBtn.disabled = true;
-    checkBtn.textContent = "⏳ 正在检查更新...";
+    setText(checkBtn, uiMessage("⏳ 正在检查更新..."));
     try {
       const res = await post("/api/plugins/check-updates", {});
       S.app.plugin_rows = res.rows || [];
@@ -340,17 +342,17 @@ export async function render(container, ctx) {
       toast("检查更新失败: " + e.message, "error");
     } finally {
       checkBtn.disabled = false;
-      checkBtn.textContent = "🔍 检查更新";
+      setText(checkBtn, uiMessage("🔍 检查更新"));
     }
   });
 
   container.append(
     el("div", { class: "card" }, [
       el("div", { class: "card-title", style: "display:flex;align-items:center;justify-content:space-between;gap:10px;" }, [
-        el("span", { text: "🧩 插件管理" }),
+        el("span", { text: uiMessage("🧩 插件管理") }),
         el("div", { style: "display:flex;gap:8px;" }, [
           checkBtn,
-          el("button", { id: "store-apply-btn", class: "btn btn-sm btn-primary", text: "🔄 应用更改", onclick: () => applyChanges(outBox) }),
+          el("button", { id: "store-apply-btn", class: "btn btn-sm btn-primary", text: uiMessage("🔄 应用更改"), onclick: () => applyChanges(outBox) }),
         ]),
       ]),
       outBox,
@@ -364,7 +366,7 @@ export async function render(container, ctx) {
       const res = await get("/api/plugins/rows");
       S.app.plugin_rows = res.rows || [];
     } catch (e) {
-      outBox.textContent = "❌ 插件列表加载失败: " + e.message;
+      setText(outBox, uiMessage("❌ 插件列表加载失败: {0}", uiMessage(e.message)));
     }
     renderRows();
   })();
@@ -390,10 +392,10 @@ async function storeAction(url, name, outBox) {
   if (!name) { toast("请选择插件", "warning"); return; }
   try {
     const res = await post(url, { name });
-    outBox.textContent = res.message;
+    setText(outBox, uiMessage(res.message));
     toast(res.message, "info");
   } catch (e) {
-    outBox.textContent = "❌ " + e.message;
+    setText(outBox, uiMessage("❌ " + e.message));
     toast(e.message, "error");
     // 同上: HTTP 层错误不 reload; 连接被掐断 (TypeError, 后端可能已在重启) 才继续等待+刷新
     if (!(e instanceof TypeError)) return;
@@ -424,22 +426,22 @@ export async function renderPluginPage(pluginName, container, ctx) {
   const plugin = (S.app.plugins || []).find((p) => p.name === pluginName);
   if (!plugin) {
     container.append(el("div", { class: "card" }, [
-      el("div", { class: "card-title", text: "❌ 插件不存在" }),
-      el("p", { class: "muted", text: `找不到插件: ${pluginName}` }),
+      el("div", { class: "card-title", text: uiMessage("❌ 插件不存在") }),
+      el("p", { class: "muted", text: uiMessage("找不到插件: {0}", pluginName) }),
     ]));
     return;
   }
 
   container.append(
-    el("h2", {}, [plugin.icon || "🧩", " ", plugin.title || plugin.name, el("span", { class: "sub", text: plugin.name })]),
+    el("h2", {}, [plugin.icon || "🧩", " ", uiMessage(plugin.title || plugin.name), el("span", { class: "sub", text: plugin.name })]),
   );
-  if (plugin.description) container.append(el("p", { class: "muted", style: "margin-bottom:12px;", text: plugin.description }));
+  if (plugin.description) container.append(el("p", { class: "muted", style: "margin-bottom:12px;", text: uiMessage(plugin.description) }));
 
   // 面板页签
   const panelBar = el("div", { class: "tabs" });
   const panelBodies = [];
   plugin.panels.forEach((panel, pi) => {
-    const btn = el("button", { class: "tab-btn" + (pi === 0 ? " active" : ""), text: (panel.icon || "🌸") + " " + panel.title });
+    const btn = el("button", { class: "tab-btn" + (pi === 0 ? " active" : ""), text: uiMessage("{0} {1}", panel.icon || "🌸", uiMessage(panel.title)) });
     const pbody = el("div", { class: "tab-content" + (pi === 0 ? " active" : ""), "data-plugin": plugin.name, "data-panel": panel.id });
     btn.addEventListener("click", () => {
       [...panelBar.children].forEach((b) => b.classList.remove("active"));
@@ -618,7 +620,7 @@ function renderPanel(plugin, panel, body) {
     if (!action.show_output) return;
     const outBox = el("div", { id: `plugin-output-${panel.id}-${action.id}`, class: "card", style: "margin:0 0 12px 0;" }, [
       // 标签自带 emoji 时直接用它, 不再补 "📤 " (否则两个 emoji 连用)
-      el("div", { class: "card-title", text: (hasLabelEmoji(action.label) ? "" : "📤 ") + (action.label || "输出") }),
+      el("div", { class: "card-title", text: uiMessage((hasLabelEmoji(action.label) ? "" : "📤 ") + (action.label || "输出")) }),
     ]);
     const gal = el("div", { class: "gallery" });
     const previewImg = el("img", { class: "preview-img", style: "display:none;max-width:100%;max-height:360px;border-radius:var(--radius-sm);border:2px solid var(--border);" });
@@ -697,7 +699,7 @@ function renderPanel(plugin, panel, body) {
     // 标签自带区分 emoji (如 "🚀 开始生成") 时省略统一的 ▶️ 前缀; 纯文字标签 (如 "开始生成") 保留
     const btn = el("button", {
       class: "btn btn-primary",
-      text: (hasLabelEmoji(action.label) ? "" : "▶️ ") + action.label,
+      text: uiMessage("{0}{1}", hasLabelEmoji(action.label) ? "" : "▶️ ", uiMessage(action.label)),
     });
     btn.addEventListener("click", async () => {
       const payload = {};
@@ -706,7 +708,7 @@ function renderPanel(plugin, panel, body) {
       const out = outputMap[action.id];
       btn.disabled = true;
       if (out) {
-        out.infoBox.textContent = "🚀 正在执行...";
+        setText(out.infoBox, uiMessage("🚀 正在执行..."));
         // 清空上一轮的明细, 避免新任务执行期间还显示旧结果
         if (out.detailBox) { out.detailBox.textContent = ""; out.detailBox.style.display = "none"; }
       }
@@ -717,12 +719,12 @@ function renderPanel(plugin, panel, body) {
         let pvBox = document.getElementById(previewId);
         if (!pvBox) {
           pvBox = el("div", { id: previewId, class: "plugin-preview hidden" });
-          const pvImg = el("img", { class: "plugin-preview-img", alt: "预览" });
+          const pvImg = el("img", { class: "plugin-preview-img", alt: uiMessage("预览") });
           // 单击最大化查看
           pvImg.addEventListener("click", () => {
             if (!pvImg.src) return;
             const overlay = el("div", { class: "img-max-overlay" }, [
-              el("img", { class: "img-max-content", src: pvImg.src, alt: "预览" }),
+              el("img", { class: "img-max-content", src: pvImg.src, alt: uiMessage("预览") }),
             ]);
             overlay.addEventListener("click", () => overlay.remove());
             document.body.append(overlay);
@@ -740,7 +742,7 @@ function renderPanel(plugin, panel, body) {
           startToasts.set(res.job_id, startNode);
         }
       } catch (e) {
-        if (out) out.infoBox.textContent = "❌ " + e.message;
+        if (out) setText(out.infoBox, uiMessage("❌ " + e.message));
         toast(e.message, "error");
         btn.disabled = false;
       }
@@ -751,7 +753,7 @@ function renderPanel(plugin, panel, body) {
 
   // 停止按钮 (仅当存在需停止的耗时动作时显示)
   if (panel.actions.some((a) => a.stop !== false)) {
-    const stopBtn = el("button", { class: "btn btn-danger", text: "⏹ 停止" });
+    const stopBtn = el("button", { class: "btn btn-danger", text: uiMessage("⏹ 停止") });
     stopBtn.addEventListener("click", async () => {
       toast("正在停止生成...", "warning");
       try {
@@ -768,7 +770,7 @@ function renderPanel(plugin, panel, body) {
 
   // 还原默认参数按钮
   if (panel.reset_defaults) {
-    const resetBtn = el("button", { class: "btn btn-file", text: "🔄 还原默认参数" });
+    const resetBtn = el("button", { class: "btn btn-file", text: uiMessage("🔄 还原默认参数") });
     resetBtn.addEventListener("click", () => {
       panel.fields.forEach((f) => {
         const ctrl = controls[f.id];

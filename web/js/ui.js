@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute, setHTML, textNode } from "./i18n.js";
 // ============================================================
 // UI 工具: DOM 创建、Toast、确认框、事件总线
 // ============================================================
@@ -9,16 +10,16 @@ export function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {
     if (k === "class") node.className = v;
-    else if (k === "text") node.textContent = v;
-    else if (k === "html") node.innerHTML = v;
+    else if (k === "text") setText(node, v);
+    else if (k === "html") setHTML(node, v);
     // textarea/input/select 的 value 必须用属性赋值 (setAttribute 对 textarea 无效)
     else if (k === "value" && (tag === "textarea" || tag === "input" || tag === "select")) node.value = v;
     else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
-    else if (v !== undefined && v !== null) node.setAttribute(k, v);
+    else if (v !== undefined && v !== null) setAttribute(node, k, v);
   }
   for (const c of [].concat(children)) {
     if (c == null) continue;
-    node.append(c.nodeType ? c : document.createTextNode(c));
+    node.append(c.nodeType ? c : textNode(c));
   }
   return node;
 }
@@ -53,7 +54,7 @@ export function wildcardsButton(target, { title = "提示词", text = "" } = {})
   const btn = el("button", {
     class: text ? "wc-open-btn wc-text-btn mini-btn" : "wc-open-btn wc-icon-btn",
     type: "button",
-    title: "Wildcards: 打开全屏编辑窗口",
+    title: uiMessage("Wildcards: 打开全屏编辑窗口"),
     text: text || "🃏",
   });
   btn._wcTarget = target;
@@ -65,37 +66,37 @@ export function wildcardsButton(target, { title = "提示词", text = "" } = {})
 
 export function filePicker({ accept = "*", placeholder = "未选择文件", label = null } = {}) {
   const wrap = el("div", { class: "field" });
-  if (label) wrap.append(el("label", { text: label }));
+  if (label) wrap.append(el("label", { text: uiMessage(label) }));
   const fileInput = el("input", { type: "file", style: "display:none" });
   fileInput.accept = accept;
-  const nameBox = el("span", { class: "file-chip", text: placeholder });
-  const btn = el("button", { class: "btn btn-sm btn-file", type: "button", text: "📁 选择文件" });
+  const nameBox = el("span", { class: "file-chip", text: uiMessage(placeholder) });
+  const btn = el("button", { class: "btn btn-sm btn-file", type: "button", text: uiMessage("📁 选择文件") });
   const clearBtn = el("button", { class: "btn btn-sm btn-clear-file", type: "button", text: "✖" });
-  clearBtn.title = "清除选择";
+  setAttribute(clearBtn, "title", uiMessage("清除选择"));
   let current = "";
   btn.addEventListener("click", () => fileInput.click());
   clearBtn.addEventListener("click", () => {
     current = "";
-    nameBox.textContent = placeholder;
+    setText(nameBox, uiMessage(placeholder));
   });
   // 统一上传: 拖入/选择都整体替换当前值 (不叠加)
   async function handleFiles(fileList) {
     if (!fileList || !fileList.length) return;
     btn.disabled = true;
-    btn.textContent = "⏳ 上传中...";
+    setText(btn, uiMessage("⏳ 上传中..."));
     try {
       const { uploadFiles } = await import("./api.js");
       const files = await uploadFiles([...fileList]);
       if (files.length) {
         current = files[0].path;
-        nameBox.textContent = files[0].name;
+        setText(nameBox, files[0].name);
         nameBox.title = files[0].path;
       }
     } catch (e) {
       toast("上传失败: " + e.message, "error");
     } finally {
       btn.disabled = false;
-      btn.textContent = "📁 选择文件";
+      setText(btn, uiMessage("📁 选择文件"));
       fileInput.value = "";
     }
   }
@@ -107,7 +108,7 @@ export function filePicker({ accept = "*", placeholder = "未选择文件", labe
     get: () => current,
     set: (v) => {
       current = v || "";
-      nameBox.textContent = v ? v.split("/").pop() : placeholder;
+      setText(nameBox, v ? v.split("/").pop() : uiMessage(placeholder));
       nameBox.title = v || "";
     },
   };
@@ -146,8 +147,8 @@ function legacyCopy(text) {
  * @param {object} opts { text: 按钮文字, title: 悬停提示, onPicked: 选择成功后的回调 }
  */
 export function folderPickButton(input, { text = "📁 选择文件夹", title = "", onPicked = null } = {}) {
-  const btn = el("button", { class: "btn btn-sm btn-file", type: "button", text });
-  if (title) btn.title = title;
+  const btn = el("button", { class: "btn btn-sm btn-file", type: "button", text: uiMessage(text) });
+  if (title) setAttribute(btn, "title", uiMessage(title));
   btn.addEventListener("click", async () => {
     try {
       const { pickFolder } = await import("./api.js");
@@ -170,12 +171,12 @@ export function folderPickButton(input, { text = "📁 选择文件夹", title =
  */
 export function imageDropZone({ label = null, placeholder = "点击选择或拖入图片", value = "", onChange = null, zoneClass = "", native = false, dropNative = false } = {}) {
   const wrap = el("div", { class: "field" });
-  if (label) wrap.append(el("label", { text: label }));
+  if (label) wrap.append(el("label", { text: uiMessage(label) }));
   const zone = el("div", { class: "img-drop-zone" + (zoneClass ? " " + zoneClass : "") });
-  const empty = el("div", { class: "img-drop-empty", html: "🖼️<br>" + placeholder });
+  const empty = el("div", { class: "img-drop-empty", html: uiMessage("🖼️<br>{0}", uiMessage(placeholder)) });
   const preview = el("img", { class: "img-drop-preview", style: "display:none;" });
   const close = el("button", { class: "img-drop-close", text: "✖", style: "display:none;" });
-  close.title = "移除图片";
+  setAttribute(close, "title", uiMessage("移除图片"));
   const fileInput = el("input", { type: "file", accept: "image/*", style: "display:none;" });
   let currentValue = "";
 
@@ -309,7 +310,7 @@ export function edgeScroll(scrollEl, opts = {}) {
   if (opts.label) {
     // 前缀标签: 固定在左, flex-shrink:0, 不参与滚动
     const lab = typeof opts.label === "string"
-      ? el("span", { class: "edge-scroll-label", text: opts.label })
+      ? el("span", { class: "edge-scroll-label", text: uiMessage(opts.label) })
       : opts.label;
     wrap.append(lab);
   }
@@ -317,8 +318,8 @@ export function edgeScroll(scrollEl, opts = {}) {
   inner.appendChild(scrollEl);
   wrap.append(inner);
   scrollEl.classList.add("edge-scroll-track");
-  const left = el("button", { class: "edge-btn edge-left", type: "button", html: "‹", title: "向左滚动" });
-  const right = el("button", { class: "edge-btn edge-right", type: "button", html: "›", title: "向右滚动" });
+  const left = el("button", { class: "edge-btn edge-left", type: "button", html: "‹", title: uiMessage("向左滚动") });
+  const right = el("button", { class: "edge-btn edge-right", type: "button", html: "›", title: uiMessage("向右滚动") });
   inner.append(left, right);
 
   let hoverRaf = null;
@@ -366,7 +367,7 @@ export function showResult(infoEl, message) {
     else if (message.includes("⚠️") || message.includes("🚀")) type = "info";
     toast(message, type);
   } else if (infoEl) {
-    infoEl.textContent = message;
+    setText(infoEl, uiMessage(message));
   }
 }
 
@@ -381,8 +382,8 @@ export function closeToastNode(node) {
 export function toast(message, type = "info", _duration = 0) {
   const box = document.getElementById("toasts");
   const node = el("div", { class: `toast ${type}` });
-  const text = el("span", { class: "toast-text", text: message });
-  const close = el("button", { class: "toast-close", type: "button", text: "✕", title: "关闭" });
+  const text = el("span", { class: "toast-text", text: uiMessage(message) });
+  const close = el("button", { class: "toast-close", type: "button", text: "✕", title: uiMessage("关闭") });
   close.addEventListener("click", () => closeToastNode(node));
   node.append(text, close);
   box.append(node);
@@ -403,13 +404,13 @@ export function confirmDialog(message, { danger = false } = {}) {
       class: "card dialog-solid",
       style: "width:340px;animation:pop-in 0.2s ease;",
     }, [
-      el("div", { class: "card-title", text: danger ? "⚠️ 确认操作" : "💭 请确认" }),
-      el("p", { style: "margin-bottom:16px;font-size:13.5px;", text: message }),
+      el("div", { class: "card-title", text: danger ? uiMessage("⚠️ 确认操作") : uiMessage("💭 请确认") }),
+      el("p", { style: "margin-bottom:16px;font-size:13.5px;", text: uiMessage(message) }),
       el("div", { style: "display:flex;gap:10px;justify-content:flex-end;" }, [
-        el("button", { class: "btn btn-sm", text: "取消", onclick: () => { overlay.remove(); resolve(false); } }),
+        el("button", { class: "btn btn-sm", text: uiMessage("取消"), onclick: () => { overlay.remove(); resolve(false); } }),
         el("button", {
           class: danger ? "btn btn-sm btn-danger" : "btn btn-sm btn-primary",
-          text: "确定",
+          text: uiMessage("确定"),
           onclick: () => { overlay.remove(); resolve(true); },
         }),
       ]),
@@ -450,19 +451,19 @@ export function choiceDialog(title, message, choices) {
     };
     const titleNode = el("div", { class: "card-title" });
     if (title && typeof title === "object" && title.icon) {
-      titleNode.append(title.icon, document.createTextNode(title.text ?? ""));
+      titleNode.append(title.icon, textNode(uiMessage(title.text ?? "")));
     } else {
-      titleNode.textContent = title ?? "";
+      setText(titleNode, uiMessage(title ?? ""));
     }
     const box = el("div", { class: "card dialog-solid", style: "width:340px;animation:pop-in 0.2s ease;" }, [
       titleNode,
-      el("p", { style: "margin-bottom:16px;font-size:13.5px;", text: message }),
+      el("p", { style: "margin-bottom:16px;font-size:13.5px;", text: uiMessage(message) }),
       el("div", { style: "display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;" },
         choices.map((c) => {
           const btn = el("button", {
             class: (c.danger ? "btn btn-sm btn-danger" : c.primary ? "btn btn-sm btn-primary" : "btn btn-sm")
               + (c.icon ? " btn-with-icon" : ""),
-            text: c.label,
+            text: uiMessage(c.label),
             onclick: () => done(c.value ?? c.label),
           });
           if (c.icon) btn.prepend(c.icon);
@@ -530,13 +531,13 @@ export function enableDrop(zone, { onFiles, accept = "image/*" } = {}) {
  */
 export function fileDropZone({ label = null, placeholder = "点击选择或拖入文件", accept = "", value = "", onChange = null, noDrag = false, directPath = false } = {}) {
   const wrap = el("div", { class: "field" });
-  if (label) wrap.append(el("label", { text: label }));
+  if (label) wrap.append(el("label", { text: uiMessage(label) }));
   const zone = el("div", { class: "img-drop-zone file-media-zone" });
-  const empty = el("div", { class: "img-drop-empty", html: "📄<br>" + placeholder });
+  const empty = el("div", { class: "img-drop-empty", html: uiMessage("📄<br>{0}", uiMessage(placeholder)) });
   const preview = el("div", { class: "file-drop-preview", style: "display:none;" });
   const mediaBox = el("div", { class: "file-drop-media", style: "display:none;" });
   const close = el("button", { class: "img-drop-close", text: "✖", style: "display:none;" });
-  close.title = "移除文件";
+  setAttribute(close, "title", uiMessage("移除文件"));
   const fileInput = el("input", { type: "file", accept, style: "display:none;" });
   let currentValue = "";
 
@@ -565,7 +566,7 @@ export function fileDropZone({ label = null, placeholder = "点击选择或拖�
           : el("audio", { src: url, controls: true, preload: "metadata", class: "file-media-el" });
         const cap = el("div", { class: "file-media-cap" }, [
           el("span", { class: "file-media-name", text: (isVideo ? "🎞️ " : "🎵 ") + name }),
-          el("span", { class: "file-media-hint", text: "点击空白处更换文件" }),
+          el("span", { class: "file-media-hint", text: uiMessage("点击空白处更换文件") }),
         ]);
         mediaBox.append(media, cap);
         mediaBox.style.display = "flex";
@@ -732,7 +733,7 @@ export function wireAutocomplete(textarea, wrap, opts = {}) {
       const item = el("div", { class: `suggest-item cat-${it.category ?? 0}`, title: it.zh ? `${it.tag} · ${it.zh}` : it.tag }, [
         el("span", { class: "s-dot" }),
         el("span", { class: "s-tag" }, [em(it.tag, kw)]),
-        it.alias ? el("span", { class: "s-alias", title: "别名: " + it.alias }, ["⇢ ", em(it.alias, kw)]) : null,
+        it.alias ? el("span", { class: "s-alias", title: uiMessage("别名: {0}", it.alias) }, ["⇢ ", em(it.alias, kw)]) : null,
         it.zh ? el("span", { class: "s-zh" }, [em(it.zh, kw)]) : null,
         el("span", { class: "s-count", text: fmtCount(it.count) }),
       ]);
@@ -860,6 +861,9 @@ export function sliderRow(spec) {
 // ---------------- 自绘下拉 (替换原生弹层, 全局自动生效) ----------------
 
 const fsApi = new WeakMap();
+if (typeof document !== "undefined") document.addEventListener("anr:language", () => {
+  document.querySelectorAll("select").forEach((select) => fsApi.get(select)?.rebuild());
+});
 
 export function initFancySelects() {
   if (initFancySelects._installed || typeof MutationObserver === "undefined") return;
@@ -966,8 +970,8 @@ function enhanceSelect(sel) {
 export function makeField(spec, state) {
   const wrap = el("div", { class: "field", "data-field": spec.id });
   const label = el("label", {}, [
-    document.createTextNode(spec.label || spec.id),
-    spec.description ? el("span", { class: "hint", text: spec.description }) : null,
+    textNode(uiMessage(spec.label || spec.id)),
+    spec.description ? el("span", { class: "hint", text: uiMessage(spec.description) }) : null,
   ]);
 
   const inputId = `fld-${Math.random().toString(36).slice(2, 8)}`;
@@ -979,7 +983,7 @@ export function makeField(spec, state) {
       input = el("textarea", {
         id: inputId,
         rows: spec.rows || 3,
-        placeholder: spec.placeholder || "",
+        placeholder: uiMessage(spec.placeholder || ""),
         value: spec.default ?? "",
       });
       // 只读 (如「读取元数据」的结果框): 用户改不了, 但动作的 set_field / 值还原仍能写入。
@@ -988,7 +992,7 @@ export function makeField(spec, state) {
       if (spec.readonly) {
         input.readOnly = true;
         input.classList.add("readonly");
-        if (!spec.placeholder) input.placeholder = "仅供查看, 不可编辑";
+        if (!spec.placeholder) setAttribute(input, "placeholder", uiMessage("仅供查看, 不可编辑"));
       }
       // 高度随内容自适应 (最大 35 行, 超出出现滚动条)
       let autosizeFn = null;
@@ -1033,8 +1037,8 @@ export function makeField(spec, state) {
       const btn = el("button", { type: "button", class: "btn btn-sm mode-btn" });
       let val = !!spec.default;
       const render = () => {
-        btn.textContent = val ? (spec.on_text || "🐾 Furry") : (spec.off_text || "🌸 Anime");
-        btn.title = spec.description || "";
+        setText(btn, uiMessage(val ? (spec.on_text || "🐾 Furry") : (spec.off_text || "🌸 Anime")));
+        setAttribute(btn, "title", uiMessage(spec.description || ""));
       };
       render();
       btn.addEventListener("click", () => { val = !val; render(); });
@@ -1047,10 +1051,10 @@ export function makeField(spec, state) {
     }
     case "corner_select": {
       // 角标预设下拉: 渲染为输入框右上角的小下拉, 由插件视图附加到目标字段
-      const select = el("select", { class: "corner-select" }, (spec.options || []).map((o) => el("option", { value: o, text: o })));
+      const select = el("select", { class: "corner-select" }, (spec.options || []).map((o) => el("option", { value: o, text: uiMessage(o) })));
       if (spec.default !== undefined && spec.default !== null) select.value = spec.default;
       const node = el("div", { class: "prompt-corner" }, [
-        el("span", { class: "prompt-corner-label", text: spec.label || "" }),
+        el("span", { class: "prompt-corner-label", text: uiMessage(spec.label || "") }),
         select,
       ]);
       return {
@@ -1061,7 +1065,7 @@ export function makeField(spec, state) {
       };
     }
     case "text": {
-      input = el("input", { id: inputId, type: "text", placeholder: spec.placeholder || "", value: spec.default ?? "" });
+      input = el("input", { id: inputId, type: "text", placeholder: uiMessage(spec.placeholder || ""), value: spec.default ?? "" });
       if (spec.readonly) {
         input.readOnly = true;
         input.classList.add("readonly");
@@ -1090,7 +1094,7 @@ export function makeField(spec, state) {
     case "checkbox": {
       input = el("input", { id: inputId, type: "checkbox" });
       input.checked = !!spec.default;
-      wrap.append(el("label", { class: "checkline", for: inputId }, [input, document.createTextNode(spec.label)]));
+      wrap.append(el("label", { class: "checkline", for: inputId }, [input, textNode(uiMessage(spec.label))]));
       return {
         node: wrap,
         getValue: () => input.checked,
@@ -1103,7 +1107,7 @@ export function makeField(spec, state) {
       const options = spec.options || [];
       if (spec.type === "select") {
         input = el("select", { id: inputId }, options.map((o) =>
-          el("option", { value: o, text: o, selected: o === (spec.default ?? options[0]) })
+          el("option", { value: o, text: uiMessage(o), selected: o === (spec.default ?? options[0]) })
         ));
         wrap.append(label, input);
         return {
@@ -1116,7 +1120,7 @@ export function makeField(spec, state) {
       const group = el("div", { class: "opt-group" });
       const opts = options.map((o) => {
         const item = el("label", { class: "opt-item", "data-value": o }, [
-          o,
+          uiMessage(o),
         ]);
         item.addEventListener("click", () => {
           if (spec.type === "radio") {
@@ -1195,13 +1199,13 @@ export function makeField(spec, state) {
     }
     case "path": {
       // 路径: 可手动输入, 也可用原生对话框选择文件夹或文件 (直接填真实路径, 不上传)
-      const pathInput = el("input", { type: "text", placeholder: spec.placeholder || "输入或选择路径", value: spec.default || "" });
+      const pathInput = el("input", { type: "text", placeholder: uiMessage(spec.placeholder || "输入或选择路径"), value: spec.default || "" });
       const buttons = [];
       let currentValue = spec.default || "";
       pathInput.addEventListener("input", () => { currentValue = pathInput.value.trim(); });
       async function setPath(p) { if (p) { currentValue = p; pathInput.value = p; } }
       if (spec.folder !== false) {
-        const dirBtn = el("button", { class: "btn btn-sm btn-file", type: "button", text: "📁 文件夹", title: "选择文件夹" });
+        const dirBtn = el("button", { class: "btn btn-sm btn-file", type: "button", text: uiMessage("📁 文件夹"), title: uiMessage("选择文件夹") });
         dirBtn.addEventListener("click", async () => {
           try { const { pickFolder } = await import("./api.js"); setPath(await pickFolder()); }
           catch (e) { toast("选择文件夹失败: " + e.message, "error"); }
@@ -1209,7 +1213,7 @@ export function makeField(spec, state) {
         buttons.push(dirBtn);
       }
       if (spec.file !== false) {
-        const fileBtn = el("button", { class: "btn btn-sm btn-file", type: "button", text: "🖼️ 文件", title: "选择文件" });
+        const fileBtn = el("button", { class: "btn btn-sm btn-file", type: "button", text: uiMessage("🖼️ 文件"), title: uiMessage("选择文件") });
         fileBtn.addEventListener("click", async () => {
           try { const { pickFile } = await import("./api.js"); setPath(await pickFile()); }
           catch (e) { toast("选择文件失败: " + e.message, "error"); }
@@ -1230,7 +1234,7 @@ export function makeField(spec, state) {
     case "chart": {
       // 实时数据分布图 (canvas): inputs 指定需监听变化的参数 id, 由插件视图负责连线重绘
       const canvas = el("canvas", { class: "dist-chart", width: 660, height: 380 });
-      const cap = el("div", { class: "dist-chart-cap", text: spec.placeholder || "实时数据分布图 (修改左侧参数即时更新)" });
+      const cap = el("div", { class: "dist-chart-cap", text: uiMessage(spec.placeholder || "实时数据分布图 (修改左侧参数即时更新)") });
       wrap.append(label, canvas, cap);
       return {
         node: wrap,
@@ -1245,8 +1249,8 @@ export function makeField(spec, state) {
       // 不包 .field 外壳 (分区标题没有标题行与控件), 由插件视图直接放进左列表单卡片
       return {
         node: el("div", { class: "field-section" }, [
-          el("span", { class: "field-section-title", text: spec.label || "" }),
-          spec.description ? el("span", { class: "field-section-hint", text: spec.description }) : null,
+          el("span", { class: "field-section-title", text: uiMessage(spec.label || "") }),
+          spec.description ? el("span", { class: "field-section-hint", text: uiMessage(spec.description) }) : null,
         ]),
         getValue: () => null,
         setValue: () => {},
@@ -1254,7 +1258,7 @@ export function makeField(spec, state) {
     }
     case "info":
     default: {
-      wrap.append(label, el("div", { class: "info-box", html: spec.default || spec.label || "" }));
+      wrap.append(label, el("div", { class: "info-box", html: uiMessage(spec.default || spec.label || "") }));
       return { node: wrap, getValue: () => null, setValue: () => {} };
     }
   }

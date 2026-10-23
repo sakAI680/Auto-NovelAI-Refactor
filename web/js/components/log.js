@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute, textNode } from "../i18n.js";
 // ============================================================
 // 运行日志面板: 自动滚动 / 高度拖拽 / 导出 / 系统状态行
 // ============================================================
@@ -14,7 +15,7 @@ export function initLogConsole() {
   // 自动滚动开关: 勾选后始终停留在最新日志位置, 取消后需手动滚动
   const autoScroll = el("label", { class: "log-autoscroll" }, [
     el("input", { type: "checkbox" }),
-    document.createTextNode("自动滚动"),
+    textNode(uiMessage("自动滚动")),
   ]);
   const autoScrollInput = autoScroll.querySelector("input");
   autoScrollInput.checked = true;
@@ -24,7 +25,7 @@ export function initLogConsole() {
   // ---- 系统状态行: 系统版本 + Python 版本 + CPU/内存/GPU 占用 ----
   // 刷新间隔 10 秒: GPU 那路要 fork nvidia-smi 子进程, 不宜过密;
   // 后端 _gpu_stats 另有 8 秒 TTL 去重 (server/routes/misc.py), 二者不要互相"对齐"成同一个数
-  const sysStats = el("span", { class: "sys-stats", id: "sys-stats", title: "系统资源占用" });
+  const sysStats = el("span", { class: "sys-stats", id: "sys-stats", title: uiMessage("系统资源占用") });
   document.querySelector(".log-header span")?.after(sysStats);
   const STATS_MS = 10 * 1000;
   const fmtGb = (mb) => (mb >= 1024 ? (mb / 1024).toFixed(1) + "G" : Math.round(mb) + "M");
@@ -35,9 +36,9 @@ export function initLogConsole() {
       const parts = [`🖥️ ${d.os}`, d.python && `🐍 Python ${d.python}`, `⚙️ CPU ${Math.round(d.cpu_percent)}%`,
         `🧠 内存 ${Math.round(d.mem_percent)}% (${d.mem_used_gb}/${d.mem_total_gb}G)`].filter(Boolean);
       if (d.gpu) parts.push(`🎮 GPU ${Math.round(d.gpu.util)}% (${fmtGb(d.gpu.mem_used)}/${fmtGb(d.gpu.mem_total)})`);
-      sysStats.textContent = parts.join(" │ ");
-      sysStats.title = (d.gpu ? `GPU: ${d.gpu.name}\n` : "") +
-        `CPU ${d.cpu_cores} 线程 · 内存 ${d.mem_total_gb}G · ${d.arch}`;
+      setText(sysStats, uiMessage(parts.map((_, i) => `{${i}}`).join(" │ "), ...parts.map((part) => uiMessage(part))));
+      setAttribute(sysStats, "title", uiMessage((d.gpu ? `GPU: ${d.gpu.name}\n` : "") +
+        `CPU ${d.cpu_cores} 线程 · 内存 ${d.mem_total_gb}G · ${d.arch}`));
     } catch { /* 读取失败静默, 保留上一次内容 */ }
   }
   refreshStats();
@@ -114,7 +115,7 @@ export function initLogConsole() {
   });
   document.getElementById("log-toggle").addEventListener("click", () => {
     const collapsed = panel.classList.toggle("collapsed");
-    document.getElementById("log-toggle").textContent = collapsed ? "展开" : "收起";
+    setText(document.getElementById("log-toggle"), collapsed ? uiMessage("展开") : uiMessage("收起"));
     // 展开时保证足够高度能看到日志 (避免拖拽后残留过小高度)
     if (!collapsed && panel.offsetHeight < 150) {
       panel.style.height = "220px";
@@ -123,7 +124,7 @@ export function initLogConsole() {
     // 展开时默认滚动到最新日志
     body.scrollTop = body.scrollHeight;
   });
-  document.getElementById("log-toggle").textContent = "展开";
+  setText(document.getElementById("log-toggle"), uiMessage("展开"));
 
   // 拖拽调整日志面板高度
   const resizer = document.getElementById("log-resizer");
@@ -136,7 +137,7 @@ export function initLogConsole() {
       // 拖拽时自动展开 (取消折叠)
       if (panel.classList.contains("collapsed")) {
         panel.classList.remove("collapsed");
-        document.getElementById("log-toggle").textContent = "收起";
+        setText(document.getElementById("log-toggle"), uiMessage("收起"));
       }
       const startY = e.clientY;
       const startH = panel.offsetHeight;

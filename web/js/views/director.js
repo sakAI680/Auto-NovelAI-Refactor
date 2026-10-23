@@ -1,3 +1,4 @@
+import { m as uiMessage, setText } from "../i18n.js";
 // ============================================================
 // 导演工具视图
 // ============================================================
@@ -26,13 +27,13 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["🎬 导演工具", el("span", { class: "sub", text: "NovelAI API 导演工具(支持批量; Pixel Snap 浏览器本地执行)" })]),
+    el("h2", {}, [uiMessage("🎬 导演工具"), el("span", { class: "sub", text: uiMessage("NovelAI API 导演工具(支持批量; Pixel Snap 浏览器本地执行)") })]),
   );
 
   const pathField = el("div", { class: "field" }, [
-    el("label", { text: "批处理路径" }),
+    el("label", { text: uiMessage("批处理路径") }),
   ]);
-  const pathCtlInput = el("input", { type: "text", placeholder: "例如: D:/images" });
+  const pathCtlInput = el("input", { type: "text", placeholder: uiMessage("例如: D:/images") });
   const pathBtn = folderPickButton(pathCtlInput);
   pathCtl = pathCtlInput;
   pathField.append(el("div", { class: "file-pick-row" }, [pathCtlInput, pathBtn]));
@@ -41,14 +42,14 @@ export async function render(container, ctx) {
   const tabsWrap = el("div");
   // 左栏: 一张实底卡包含 输入 + 各个处理模式
   const baseCard = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["📂 输入"]),
+    el("div", { class: "card-title" }, [uiMessage("📂 输入")]),
     pathField,
     picker.node,
     tabsWrap,
   ]);
 
   const outCard = el("div", { class: "card" }, [
-    el("div", { class: "card-title" }, ["🖼️ 输出"]),
+    el("div", { class: "card-title" }, [uiMessage("🖼️ 输出")]),
   ]);
   galleryEl = el("div", { class: "gallery" });
   infoEl = el("div", { class: "info-box" });
@@ -92,7 +93,7 @@ function renderKind(kind, body) {
 
   if (kind.id === "colorize") {
     const defry = el("input", { type: "number", min: 0, max: 5, value: 0 });
-    const prompt = el("input", { type: "text", placeholder: "Prompt (可选)" });
+    const prompt = el("input", { type: "text", placeholder: uiMessage("Prompt (可选)") });
     const promptLabel = el("label", { text: "Prompt" });
     promptLabel.append(wildcardsButton(prompt, { title: "Prompt" }));
     optsWrap.append(
@@ -103,15 +104,15 @@ function renderKind(kind, body) {
     options.prompt = prompt;
   } else if (kind.id === "emotion") {
     const tags = ["Neutral","Happy","Sad","Angry","Scared","Surprised","Tired","Excited","Nervous","Thinking","Confused","Shy","Disgusted","Smug","Bored","Laughing","Irritated","Aroused","Embarrassed","Worried","Love","Determined","Hurt","Playful"];
-    const tag = el("select", {}, tags.map((t) => el("option", { value: t, text: t })));
+    const tag = el("select", {}, tags.map((t) => el("option", { value: t, text: uiMessage(t) })));
     const strengths = ["Normal","Slightly Weak","Weak","Even Weaker","Very Weak","Weakest"];
     const strength = el("select", {}, strengths.map((s) => el("option", { value: s, text: s })));
-    const prompt = el("input", { type: "text", placeholder: "Prompt (可选)" });
+    const prompt = el("input", { type: "text", placeholder: uiMessage("Prompt (可选)") });
     const promptLabel = el("label", { text: "Prompt" });
     promptLabel.append(wildcardsButton(prompt, { title: "Prompt" }));
     optsWrap.append(
       el("div", { class: "field" }, [el("label", { text: "Emotion" }), tag]),
-      el("div", { class: "field" }, [el("label", { text: "强度" }), strength]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("强度") }), strength]),
       el("div", { class: "field" }, [promptLabel, prompt])
     );
     options.tag = tag;
@@ -143,7 +144,7 @@ function renderKind(kind, body) {
         el("label", { class: "checkline" }, [document.createTextNode("Avoid Over-Refining"), avoid]),
         el("label", { class: "checkline" }, [document.createTextNode("Upscale"), upscale]),
       ]),
-      el("div", { class: "muted", text: "🖥️ 浏览器本地执行, 算法与官网 Director Tools 一致 (逐位对齐其纯 JS 后端): 识别被放大/平滑过的像素图, 还原为真实像素画分辨率; 勾选 Upscale 则按原倍数放回 (最近邻)。不请求 API、不消耗积分" }),
+      el("div", { class: "muted", text: uiMessage("🖥️ 浏览器本地执行, 算法与官网 Director Tools 一致 (逐位对齐其纯 JS 后端): 识别被放大/平滑过的像素图, 还原为真实像素画分辨率; 勾选 Upscale 则按原倍数放回 (最近邻)。不请求 API、不消耗积分") }),
     );
     options.palette = palette;
     options.colors = colors;
@@ -151,8 +152,8 @@ function renderKind(kind, body) {
     options.upscale = upscale;
   }
 
-  const runBtn = el("button", { class: "btn btn-primary", text: "🚀 开始处理" });
-  const stopBtn = el("button", { class: "btn btn-danger", text: "⏹ 停止" });
+  const runBtn = el("button", { class: "btn btn-primary", text: uiMessage("🚀 开始处理") });
+  const stopBtn = el("button", { class: "btn btn-danger", text: uiMessage("⏹ 停止") });
   stopBtn.addEventListener("click", async () => {
     if (kind.id === "pixel_snap") {
       snapStop = true;
@@ -186,13 +187,13 @@ function renderKind(kind, body) {
       options: Object.fromEntries(Object.entries(options).map(([k, v]) => [k, v.value])),
     };
     runBtn.disabled = true;
-    infoEl.textContent = "🚀 正在处理...";
+    setText(infoEl, uiMessage("🚀 正在处理..."));
     try {
       const res = await post("/api/director", payload);
       toast(`任务已启动: ${res.job_id}`, "success");
       runBtn.disabled = false;
     } catch (e) {
-      infoEl.textContent = "❌ " + e.message;
+      setText(infoEl, uiMessage("❌ " + e.message));
       toast(e.message, "error");
       runBtn.disabled = false;
     }
@@ -278,7 +279,7 @@ async function runPixelSnap(opts, runBtn) {
   try {
     for (let i = 0; i < list.length; i++) {
       if (snapStop) break;
-      infoEl.textContent = "🖥️ 浏览器本地处理 " + (i + 1) + "/" + list.length + (lastNote ? " (上一张 " + lastNote + ")" : "") + " ...";
+      setText(infoEl, uiMessage("🖥️ 浏览器本地处理 {0}/{1}{2} ...", i + 1, list.length, lastNote ? " (上一张 " + lastNote + ")" : ""));
       try {
         const resp = await fetch(imageUrl(list[i]));
         if (!resp.ok) throw new Error("HTTP " + resp.status);

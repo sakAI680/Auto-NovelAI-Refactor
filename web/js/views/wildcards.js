@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, textNode } from "../i18n.js";
 // ============================================================
 // Wildcards 面板 (嵌入 Wildcards 全屏弹窗)
 //   左: 卡片库 (分类页签 / 搜索 / 多选 / 拖拽)   右: 卡片编辑
@@ -86,7 +87,7 @@ export async function renderPanel(container, ctx, opts = {}) {
   const countEl = el("span", { class: "wc-count muted" });
   // ---------------- 右: 新建 / 编辑卡片 (共用一个面板区域) ----------------
   const typeList = el("div", { class: "wc-types" });
-  const searchBox = el("input", { type: "text", class: "wc-search", placeholder: "🔍 搜索卡片名称 (大量卡片时快速筛选)..." });
+  const searchBox = el("input", { type: "text", class: "wc-search", placeholder: uiMessage("🔍 搜索卡片名称 (大量卡片时快速筛选)...") });
   const grid = el("div", { class: "wc-grid" });
   const selText = el("span", { text: "" });
   const selBar = el("div", { class: "wc-sel-bar hidden" }, [
@@ -95,8 +96,8 @@ export async function renderPanel(container, ctx, opts = {}) {
   ]);
 
   const libTabs = el("div", { class: "wc-lib-tabs" }, [
-    el("button", { class: "tab-btn active", text: "🗂️ 卡片库", onclick: () => switchLib("cards") }),
-    el("button", { class: "tab-btn", text: "📚 提示词库", onclick: () => switchLib("prompts") }),
+    el("button", { class: "tab-btn active", text: uiMessage("🗂️ 卡片库"), onclick: () => switchLib("cards") }),
+    el("button", { class: "tab-btn", text: uiMessage("📚 提示词库"), onclick: () => switchLib("prompts") }),
   ]);
   // 分类栏启用横向滚动: 分类多到放不下时不再换行把版面撑高,
   // 而是在一行内滚 (两端渐隐箭头, 悬停自动滚; "分类" 前缀固定在左不随内容滚)
@@ -150,7 +151,7 @@ export async function renderPanel(container, ctx, opts = {}) {
   // 布局与卡片库保持一致 (按用户要求): 上方一排"分类"页签, 选中哪个分类,
   // 下方网格只展示该分类下的提示词。原先是一整页纵向罗列的全部分组,
   // 分类一多就要一直往下滚, 而且看不出"当前在哪个分类"。
-  const plSearch = el("input", { type: "text", class: "wc-search", placeholder: "🔍 搜索当前分类的提示词..." });
+  const plSearch = el("input", { type: "text", class: "wc-search", placeholder: uiMessage("🔍 搜索当前分类的提示词...") });
   // 防抖: 重建网格要为每个 chip 建节点并绑监听器, 逐字符触发很卡; 与卡片搜索一致用 150ms 合并。
   let plSearchTimer = 0;
   plSearch.addEventListener("input", () => {
@@ -158,13 +159,13 @@ export async function renderPanel(container, ctx, opts = {}) {
     plSearchTimer = setTimeout(() => { plKeyword = plSearch.value; renderPlGrid(); }, 150);
   });
   // 收藏提示词表单的输入件: 由 showPromptCreate() 挂进右侧编辑卡片 (与"新建卡片"同款面板)
-  const plInput = el("textarea", { rows: 8, placeholder: "要收藏的关键词或一段提示词 (支持自动补全)" });
+  const plInput = el("textarea", { rows: 8, placeholder: uiMessage("要收藏的关键词或一段提示词 (支持自动补全)") });
   // 分类: 与新建卡片一致的下拉形式, 支持选择已有分类或直接输入新分类
-  const plCatInput = el("input", { type: "text", style: "flex:1;min-width:0;", placeholder: "📁 选择/输入分类" });
+  const plCatInput = el("input", { type: "text", style: "flex:1;min-width:0;", placeholder: uiMessage("📁 选择/输入分类") });
   const plCatWrap = el("div", { class: "wc-type-wrap" }, [
     plCatInput,
     el("button", {
-      class: "wc-type-caret", type: "button", text: "▾", title: "选择已有分类",
+      class: "wc-type-caret", type: "button", text: "▾", title: uiMessage("选择已有分类"),
       onclick: (e) => { e.stopPropagation(); togglePlCatDropdown(); },
     }),
   ]);
@@ -178,7 +179,7 @@ export async function renderPanel(container, ctx, opts = {}) {
   const plAddBtn = el("button", {
     // 初始在卡片库, 提示词库的入口默认隐藏 (switchLib 会按当前库切换)
     class: "btn btn-sm hidden",
-    text: "➕ 收藏提示词",
+    text: uiMessage("➕ 收藏提示词"),
     onclick: () => showPromptCreate(),
   });
   const plTypeScroller = edgeScroll(plTypes, { label: "分类" });
@@ -189,10 +190,10 @@ export async function renderPanel(container, ctx, opts = {}) {
     plSelText,
   ]);
 
-  const createBtn = el("button", { class: "btn btn-sm", text: "➕ 新建卡片", onclick: () => { switchLib("cards"); showCreate(); } });
+  const createBtn = el("button", { class: "btn btn-sm", text: uiMessage("➕ 新建卡片"), onclick: () => { switchLib("cards"); showCreate(); } });
   const browseCard = el("div", { class: "card wc-browse" }, [
     el("div", { class: "wc-browse-head" }, [
-      el("div", { class: "card-title", text: "🗂️ 素材库" }),
+      el("div", { class: "card-title", text: uiMessage("🗂️ 素材库") }),
       countEl,
       el("span", { class: "spacer" }),
       plAddBtn,      // 提示词库的入口 (与"新建卡片"同位, 由 switchLib 按当前库二选一显示)
@@ -266,7 +267,7 @@ export async function renderPanel(container, ctx, opts = {}) {
 
   function syncBuiltinSelBar() {
     const n = builtinSel.size;
-    plSelText.textContent = n ? `已选 ${n} 个内置提示词 — 点右上角 "➕ 添加选中" 加入, "✖ 清除选择" 取消` : "";
+    setText(plSelText, n ? uiMessage("已选 {0} 个内置提示词 — 点右上角 \"➕ 添加选中\" 加入, \"✖ 清除选择\" 取消", n) : uiMessage(""));
     plSelText.classList.toggle("hidden", !n);
   }
 
@@ -326,7 +327,7 @@ export async function renderPanel(container, ctx, opts = {}) {
     ];
     const list = el("div", { class: "wc-type-dd" }, cats.map((c) =>
       el("div", { class: "wc-type-item", text: "📁 " + c, onclick: () => { plCatInput.value = c; dd.remove(); } })));
-    if (!cats.length) list.append(el("div", { class: "muted", style: "padding:10px;text-align:center;", text: "暂无已有分类, 直接输入即新建" }));
+    if (!cats.length) list.append(el("div", { class: "muted", style: "padding:10px;text-align:center;", text: uiMessage("暂无已有分类, 直接输入即新建") }));
     plCatWrap.append(list);
   }
   if (closePlCatDdRef) document.removeEventListener("click", closePlCatDdRef);
@@ -413,7 +414,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       const isBuiltin = g.builtin != null;
       tab.append(el("span", {
         class: "wc-type-del", text: "✕",
-        title: isBuiltin ? "删除自带分类 " + g.key + " (含 " + g.builtinTags.length + " 个标签)" : "删除分类 " + g.key + " 及其中 " + g.userItems.length + " 条收藏",
+        title: isBuiltin ? uiMessage("删除自带分类 {0} (含 {1} 个标签)", g.key, g.builtinTags.length) : uiMessage("删除分类 {0} 及其中 {1} 条收藏", g.key, g.userItems.length),
         onclick: async (e) => {
           e.stopPropagation();
           const ok = isBuiltin
@@ -443,7 +444,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       plTypes.append(tab);
     });
     if (!groups.length) {
-      plTypes.append(el("span", { class: "muted", style: "font-size:12.5px;padding:3px 0;", text: "暂无分类 — 展开上方「➕ 收藏新提示词」新建" }));
+      plTypes.append(el("span", { class: "muted", style: "font-size:12.5px;padding:3px 0;", text: uiMessage("暂无分类 — 展开上方「➕ 收藏新提示词」新建") }));
     }
   }
 
@@ -451,13 +452,13 @@ export async function renderPanel(container, ctx, opts = {}) {
   function renderPlGrid() {
     clear(plGrid);
     if (!plCat) {
-      plGrid.append(el("div", { class: "gallery-empty", text: "请选择一个分类" }));
+      plGrid.append(el("div", { class: "gallery-empty", text: uiMessage("请选择一个分类") }));
       syncBuiltinSelBar();
       return;
     }
     const kw = plKeyword.trim().toLowerCase();
     const g = plGroups().find((x) => x.key === plCat);
-    if (!g) { plGrid.append(el("div", { class: "gallery-empty", text: "请选择一个分类" })); return; }
+    if (!g) { plGrid.append(el("div", { class: "gallery-empty", text: uiMessage("请选择一个分类") })); return; }
     const bTags = g.builtinTags.filter(([en, zh]) =>
       !kw || en.toLowerCase().includes(kw) || (zh || "").toLowerCase().includes(kw));
     const uItems = g.userItems.filter((it) =>
@@ -467,7 +468,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       ...uItems.map((it) => makePromptChip(it.text, plZh.get(plKey(it.text)) || "", { userItem: it })),
     ];
     if (!chips.length) {
-      plGrid.append(el("div", { class: "gallery-empty", text: kw ? "当前分类没有匹配的提示词" : "该分类暂无提示词 — 展开上方「➕ 收藏新提示词」添加" }));
+      plGrid.append(el("div", { class: "gallery-empty", text: kw ? uiMessage("当前分类没有匹配的提示词") : uiMessage("该分类暂无提示词 — 展开上方「➕ 收藏新提示词」添加") }));
       syncBuiltinSelBar();
       return;
     }
@@ -553,7 +554,7 @@ export async function renderPanel(container, ctx, opts = {}) {
     ]);
     if (opts.userItem) {
       chip.append(el("span", {
-        class: "wc-pl-chip-del", text: "✕", title: "从库中删除这条收藏",
+        class: "wc-pl-chip-del", text: "✕", title: uiMessage("从库中删除这条收藏"),
         onclick: async (e) => {
           e.stopPropagation();
           try {
@@ -568,7 +569,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       }));
     } else if (opts.builtin) {
       chip.append(el("span", {
-        class: "wc-pl-chip-del", text: "✕", title: "从词库中删除这个标签",
+        class: "wc-pl-chip-del", text: "✕", title: uiMessage("从词库中删除这个标签"),
         onclick: async (e) => {
           e.stopPropagation();
           await savePlMeta({ hidden_tags: [...new Set([...(plMeta.hidden_tags || []), en])] });
@@ -642,7 +643,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       tab.append(el("span", { text: "📁 " + t }));
       // 悬停显示删除分类按钮 (文件夹连同卡片移到回收站)
       tab.append(el("span", {
-        class: "wc-type-del", text: "✕", title: `删除分类 <${t}> (卡片移到回收站)`,
+        class: "wc-type-del", text: "✕", title: uiMessage("删除分类 <{0}> (卡片移到回收站)", t),
         onclick: async (e) => {
           e.stopPropagation();
           const ok = await confirmDialog(`确定删除分类「${t}」? 该分类下的所有卡片和封面将移到回收站。`, { danger: true });
@@ -686,7 +687,7 @@ export async function renderPanel(container, ctx, opts = {}) {
     if (!state.type) {
       visibleCards = [];
       countEl.textContent = "";
-      grid.append(el("div", { class: "gallery-empty", text: "请选择一个分类" }));
+      grid.append(el("div", { class: "gallery-empty", text: uiMessage("请选择一个分类") }));
       return;
     }
     const kw = state.keyword.trim().toLowerCase();
@@ -697,9 +698,9 @@ export async function renderPanel(container, ctx, opts = {}) {
     ];
     const filtered = kw ? allCards.filter((c) => c.name.toLowerCase().includes(kw)) : allCards;
     visibleCards = [...specials, ...filtered];
-    countEl.textContent = state.type ? `${state.type} · ${visibleCards.length} / ${allCards.length} 张卡片` : "";
+    setText(countEl, state.type ? uiMessage("{0} · {1} / {2} 张卡片", state.type, visibleCards.length, allCards.length) : uiMessage(""));
     if (!visibleCards.length) {
-      grid.append(el("div", { class: "gallery-empty", text: !state.type ? "请选择一个分类" : (kw ? "没有匹配的卡片" : "该分类暂无卡片") }));
+      grid.append(el("div", { class: "gallery-empty", text: !state.type ? uiMessage("请选择一个分类") : kw ? uiMessage("没有匹配的卡片") : uiMessage("该分类暂无卡片") }));
       return;
     }
     // DocumentFragment 批量插入: 155 张卡时一次性 append 比逐张快约 40%
@@ -738,16 +739,14 @@ export async function renderPanel(container, ctx, opts = {}) {
     $$(".wildcard-card", grid).forEach((c) => c.classList.toggle("selected", selection.has(c.dataset.name)));
     const n = cardSelection.count();
     const nTypes = Object.values(cardSelection.map).filter((s) => s?.length).length;
-    selText.textContent = n
-      ? `已选 ${n} 张卡片${nTypes > 1 ? ` (${nTypes} 个分类)` : ""} — 拖入上方提示词, 或点右上角 "➕ 添加选中"`
-      : "";
+    setText(selText, n ? uiMessage("已选 {0} 张卡片{1} — 拖入上方提示词, 或点右上角 \"➕ 添加选中\"", n, nTypes > 1 ? ` (${nTypes} 个分类)` : "") : uiMessage(""));
     selBar.classList.toggle("hidden", !n);
   }
 
   function renderCard(card) {
     const item = el("div", {
       class: "wildcard-card" + (card.special ? " wildcard-special" : ""),
-      title: "点击选中/取消 · 双击编辑\n" + (card.tags || card.name),
+      title: uiMessage("点击选中/取消 · 双击编辑\n{0}", card.tags || card.name),
       draggable: true,
     });
     item.dataset.name = card.name;
@@ -758,10 +757,10 @@ export async function renderPanel(container, ctx, opts = {}) {
       const bust = coverBustNames.has(card.name);
       item.append(el("div", { class: "wc-cover" }, [el("img", { src: imageUrl(card.cover, !!bust), alt: card.name, loading: "lazy" })]));
     } else {
-      item.append(el("div", { class: "wc-cover wc-cover-empty" }, [el("span", { text: card.special ? (card.name === "随机" ? "🎲" : "🔁") : "🃏" })]));
+      item.append(el("div", { class: "wc-cover wc-cover-empty" }, [el("span", { text: card.special ? card.name === "随机" ? uiMessage("🎲") : uiMessage("🔁") : uiMessage("🃏") })]));
     }
     item.append(el("div", { class: "wc-name", text: card.name }));
-    item.append(el("div", { class: "wc-tags", text: (card.tags || "空").slice(0, 40) || "空" }));
+    item.append(el("div", { class: "wc-tags", text: uiMessage((card.tags || "空").slice(0, 40) || "空") }));
 
     item.addEventListener("click", (e) => {
       const idx = visibleCards.findIndex((c) => c.name === card.name);
@@ -814,7 +813,7 @@ export async function renderPanel(container, ctx, opts = {}) {
     clear(editCard);
     const isSpecial = name === "随机" || name === "顺序";
     const nameInput = el("input", { type: "text", value: name, readonly: isSpecial });
-    const tagsInput = el("textarea", { rows: 4, placeholder: "提示词内容" });
+    const tagsInput = el("textarea", { rows: 4, placeholder: uiMessage("提示词内容") });
     if (isSpecial) {
       tagsInput.value = `<${state.type}:${name}>`;
     } else {
@@ -828,7 +827,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       coverBox = el("div", { style: "margin:4px 0 8px;" });
       const coverImg = el("img", { style: "display:none;max-height:120px;border-radius:var(--radius-sm);border:1px solid var(--border);" });
       const coverFile = el("input", { type: "file", accept: "image/*", style: "display:none;" });
-      const coverBtn = el("button", { class: "btn btn-sm btn-file", text: "🖼️ 上传封面" });
+      const coverBtn = el("button", { class: "btn btn-sm btn-file", text: uiMessage("🖼️ 上传封面") });
       const curCover = allCards.find((c) => c.name === name)?.cover;
       if (curCover) { coverImg.src = imageUrl(curCover); coverImg.style.display = ""; }
       coverBtn.addEventListener("click", () => coverFile.click());
@@ -852,7 +851,7 @@ export async function renderPanel(container, ctx, opts = {}) {
         coverFile.value = "";
       });
       // "使用当前图片作为封面": 将本次生成的最后一张图片设为封面
-      const lastImgBtn = el("button", { class: "btn btn-sm", text: "🖼️ 使用当前图片作为封面", title: "将本次生成的最后一张图片设为该卡片封面" });
+      const lastImgBtn = el("button", { class: "btn btn-sm", text: uiMessage("🖼️ 使用当前图片作为封面"), title: uiMessage("将本次生成的最后一张图片设为该卡片封面") });
       lastImgBtn.addEventListener("click", async () => {
         if (!state.type || !name) { toast("请先选择卡片", "warning"); return; }
         const imgPath = getCurrentOutputImage();
@@ -877,25 +876,25 @@ export async function renderPanel(container, ctx, opts = {}) {
     if (opts.addTarget) {
       actRow.append(el("button", {
         class: "btn btn-sm btn-primary",
-        text: "➕ 添加到当前输入框",
-        title: "添加到打开此窗口的提示词输入框",
+        text: uiMessage("➕ 添加到当前输入框"),
+        title: uiMessage("添加到打开此窗口的提示词输入框"),
         onclick: () => addToTarget(name),
       }));
     }
     // 特殊卡片 (随机/顺序) 是占位指令, 不可保存或删除
     if (!isSpecial) {
       actRow.append(
-        el("button", { class: "btn btn-sm", text: "💾 保存修改", onclick: () => saveCard(name, tagsInput) }),
-        el("button", { class: "btn btn-sm btn-danger", text: "🗑️ 删除", onclick: () => deleteCard(name) }),
+        el("button", { class: "btn btn-sm", text: uiMessage("💾 保存修改"), onclick: () => saveCard(name, tagsInput) }),
+        el("button", { class: "btn btn-sm btn-danger", text: uiMessage("🗑️ 删除"), onclick: () => deleteCard(name) }),
       );
     } else {
-      actRow.append(el("span", { class: "muted", style: "width:100%;font-size:12.5px;", text: "将生成 <" + state.type + ":" + name + ">, 生成时会" + (name === "随机" ? "随机抽取" : "按文件名顺序轮流使用") + "该分类下的一张卡片" }));
+      actRow.append(el("span", { class: "muted", style: "width:100%;font-size:12.5px;", text: uiMessage("将生成 <{0}:{1}>, 生成时会{2}该分类下的一张卡片", state.type, name, name === "随机" ? "随机抽取" : "按文件名顺序轮流使用") }));
     }
 
     editCard.append(
       el("div", { class: "card-title", text: `✏️ <${state.type}:${name}>` }),
       coverBox,
-      el("div", { class: "field" }, [el("label", { text: "名称" }), nameInput]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("名称") }), nameInput]),
       isSpecial ? null : wireTagsField(tagsInput),
       actRow,
     );
@@ -903,7 +902,7 @@ export async function renderPanel(container, ctx, opts = {}) {
 
   function wireTagsField(ta) {
     const f = el("div", { class: "field" });
-    f.append(el("label", { text: "包含的提示词" }), ta);
+    f.append(el("label", { text: uiMessage("包含的提示词") }), ta);
     wireAutocomplete(ta, f);
     return f;
   }
@@ -964,8 +963,8 @@ export async function renderPanel(container, ctx, opts = {}) {
     const addCurBtn = el("button", {
       class: "btn btn-sm btn-file",
       type: "button",
-      text: "➕ 添加当前提示词",
-      title: "把上方提示词编辑器中的当前内容填入此输入框",
+      text: uiMessage("➕ 添加当前提示词"),
+      title: uiMessage("把上方提示词编辑器中的当前内容填入此输入框"),
       onclick: () => {
         const cur = (opts.addTarget?.get() || "").trim();
         if (!cur) { toast("上方提示词为空, 没有可添加的内容", "warning"); return; }
@@ -976,19 +975,19 @@ export async function renderPanel(container, ctx, opts = {}) {
       },
     });
     const contentLabel = el("label", { class: "wc-field-label" }, [
-      document.createTextNode("内容"),
+      textNode(uiMessage("内容")),
       // 标题行右侧挂 Wildcards 按钮 (与图片生成页的提示词输入框同款交互)
       wildcardsButton(plInput, { title: "内容" }),
     ]);
     const taBox = el("div", { class: "ta-box" }, [plInput]);
     editCard.append(
-      el("div", { class: "card-title", text: "📚 收藏提示词" }),
-      el("div", { class: "field" }, [el("label", { text: "分类" }), plCatWrap]),
+      el("div", { class: "card-title", text: uiMessage("📚 收藏提示词") }),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("分类") }), plCatWrap]),
       el("div", { class: "field" }, [contentLabel, taBox]),
       el("div", { class: "wc-edit-actions" }, [
         addCurBtn,
-        el("button", { class: "btn btn-sm btn-primary", text: "✅ 保存", onclick: savePromptLib }),
-        el("button", { class: "btn btn-sm btn-ghost", text: "✖ 取消", onclick: renderEditPlaceholder }),
+        el("button", { class: "btn btn-sm btn-primary", text: uiMessage("✅ 保存"), onclick: savePromptLib }),
+        el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("✖ 取消"), onclick: renderEditPlaceholder }),
       ]),
     );
     // 与"新建卡片"的提示词输入框一致: portal 补全 (逃出弹窗裁剪)
@@ -1004,22 +1003,22 @@ export async function renderPanel(container, ctx, opts = {}) {
     editCard.classList.remove("hidden");
     layout.classList.remove("single");
     clear(editCard);
-    const typeInput = el("input", { type: "text", placeholder: "从下拉选择已有分类, 或输入新分类" });
+    const typeInput = el("input", { type: "text", placeholder: uiMessage("从下拉选择已有分类, 或输入新分类") });
     const typeWrap = el("div", { class: "wc-type-wrap" }, [typeInput, el("button", {
       class: "wc-type-caret",
       type: "button",
       text: "▾",
-      title: "选择已有分类",
+      title: uiMessage("选择已有分类"),
       onclick: (e) => { e.stopPropagation(); toggleTypeDropdown(typeWrap); },
     })]);
-    const nameInput = el("input", { type: "text", placeholder: "新卡片名" });
-    const tagsInput = el("textarea", { rows: 8, placeholder: "提示词内容 (逗号分隔多个标签, 支持自动补全)" });
+    const nameInput = el("input", { type: "text", placeholder: uiMessage("新卡片名") });
+    const tagsInput = el("textarea", { rows: 8, placeholder: uiMessage("提示词内容 (逗号分隔多个标签, 支持自动补全)") });
     // "添加当前提示词": 把上方提示词编辑器中的当前内容填入此输入框 (已有时追加)
     const addCurBtn = el("button", {
       class: "btn btn-sm btn-file",
       type: "button",
-      text: "➕ 添加当前提示词",
-      title: "把上方提示词编辑器中的当前内容填入此输入框",
+      text: uiMessage("➕ 添加当前提示词"),
+      title: uiMessage("把上方提示词编辑器中的当前内容填入此输入框"),
       onclick: () => {
         const cur = (opts.addTarget?.get() || "").trim();
         if (!cur) { toast("上方提示词为空, 没有可添加的内容", "warning"); return; }
@@ -1031,14 +1030,14 @@ export async function renderPanel(container, ctx, opts = {}) {
     });
 
     editCard.append(
-      el("div", { class: "card-title", text: "✨ 新建卡片" }),
-      el("div", { class: "field" }, [el("label", { text: "分类" }), typeWrap]),
-      el("div", { class: "field" }, [el("label", { text: "名称" }), nameInput]),
-      el("div", { class: "field" }, [el("label", { text: "提示词" }), tagsInput]),
+      el("div", { class: "card-title", text: uiMessage("✨ 新建卡片") }),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("分类") }), typeWrap]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("名称") }), nameInput]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("提示词") }), tagsInput]),
       el("div", { class: "wc-edit-actions" }, [
         addCurBtn,
-        el("button", { class: "btn btn-sm btn-primary", text: "✅ 创建", onclick: () => createCard(typeInput, nameInput, tagsInput) }),
-        el("button", { class: "btn btn-sm btn-ghost", text: "✖ 取消", onclick: renderEditPlaceholder }),
+        el("button", { class: "btn btn-sm btn-primary", text: uiMessage("✅ 创建"), onclick: () => createCard(typeInput, nameInput, tagsInput) }),
+        el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("✖ 取消"), onclick: renderEditPlaceholder }),
       ]),
     );
     typeInput.focus();
@@ -1051,7 +1050,7 @@ export async function renderPanel(container, ctx, opts = {}) {
       const list = el("div", { class: "wc-type-dd" }, (allTypes || []).map((t) =>
         el("div", { class: "wc-type-item", text: "📁 " + t, onclick: () => { typeInput.value = t; dd.remove(); } })
       ));
-      if (!(allTypes || []).length) list.append(el("div", { class: "muted", style: "padding:10px;text-align:center;", text: "暂无已有分类" }));
+      if (!(allTypes || []).length) list.append(el("div", { class: "muted", style: "padding:10px;text-align:center;", text: uiMessage("暂无已有分类") }));
       wrap.append(list);
     }
     if (closeTypeDdRef) document.removeEventListener("click", closeTypeDdRef);

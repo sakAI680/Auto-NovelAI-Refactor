@@ -1,3 +1,4 @@
+import { m as uiMessage, setText } from "../i18n.js";
 // ============================================================
 // 超分降噪视图
 // ============================================================
@@ -22,13 +23,13 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["✨ 超分降噪", el("span", { class: "sub", text: "仅支持 Windows" })]),
+    el("h2", {}, [uiMessage("✨ 超分降噪"), el("span", { class: "sub", text: uiMessage("仅支持 Windows") })]),
   );
 
   const pathField = el("div", { class: "field" }, [
-    el("label", { text: "批处理路径" }),
+    el("label", { text: uiMessage("批处理路径") }),
   ]);
-  const pathCtlInput = el("input", { type: "text", placeholder: "例如: D:/images" });
+  const pathCtlInput = el("input", { type: "text", placeholder: uiMessage("例如: D:/images") });
   const pathBtn = folderPickButton(pathCtlInput);
   pathCtl = pathCtlInput;
   pathField.append(el("div", { class: "file-pick-row" }, [pathCtlInput, pathBtn]));
@@ -45,18 +46,18 @@ export async function render(container, ctx) {
 
   // 另存目录: 留空 = 保存到原图所在目录 (原行为), 填写后统一保存到该目录。
   // 与上方批处理路径同一套"输入框 + 选择文件夹按钮"排版。
-  const saveDirInput = el("input", { type: "text", placeholder: "留空 = 保存到原图所在目录, 例如: D:/images/out" });
+  const saveDirInput = el("input", { type: "text", placeholder: uiMessage("留空 = 保存到原图所在目录, 例如: D:/images/out") });
   const saveDirBtn = folderPickButton(saveDirInput);
   saveDirCtl = saveDirInput;
   const saveDirField = el("div", { class: "field" }, [
-    el("label", { text: "保存目录" }),
+    el("label", { text: uiMessage("保存目录") }),
     el("div", { class: "file-pick-row" }, [saveDirInput, saveDirBtn]),
   ]);
 
   const tabsWrap = el("div");
   // 左栏: 一张实底卡包含 输入 + 各引擎参数(含模型)
   const baseCard = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["📂 输入"]),
+    el("div", { class: "card-title" }, [uiMessage("📂 输入")]),
     pathField,
     imgField,
     saveDirField,
@@ -64,7 +65,7 @@ export async function render(container, ctx) {
   ]);
 
   const outCard = el("div", { class: "card" }, [
-    el("div", { class: "card-title" }, ["🖼️ 输出"]),
+    el("div", { class: "card-title" }, [uiMessage("🖼️ 输出")]),
   ]);
   galleryEl = el("div", { class: "gallery" });
   infoEl = el("div", { class: "info-box" });
@@ -80,7 +81,7 @@ export async function render(container, ctx) {
   const bar = el("div", { class: "tabs" });
   const bodies = [];
   ENGINES.forEach((eng, i) => {
-    const btn = el("button", { class: "tab-btn" + (i === 0 ? " active" : ""), text: eng.title });
+    const btn = el("button", { class: "tab-btn" + (i === 0 ? " active" : ""), text: uiMessage(eng.title) });
     const body = el("div", { class: "tab-content" + (i === 0 ? " active" : "") });
     btn.addEventListener("click", () => {
       [...bar.children].forEach((b) => b.classList.remove("active"));
@@ -115,7 +116,7 @@ export async function render(container, ctx) {
 
 function sliderField(label, min, max, step, value) {
   const s = sliderRow({ min, max, step, value });
-  return { node: el("div", { class: "field" }, [el("label", { text: label }), s.node]), input: s.input };
+  return { node: el("div", { class: "field" }, [el("label", { text: uiMessage(label) }), s.node]), input: s.input };
 }
 
 function renderEngine(eng, body) {
@@ -125,17 +126,17 @@ function renderEngine(eng, body) {
   if (eng.id === "realcugan") {
     const noise = sliderField("🔇 降噪强度", -1, 3, 1, 3);
     const scale = sliderField("🔍 放大倍数", 2, 4, 1, 2);
-    const model = el("select", {}, ["models-se", "models-pro", "models-nose"].map((m) => el("option", { value: m, text: m })));
-    optsWrap.append(noise.node, scale.node, el("div", { class: "field" }, [el("label", { text: "超分模型" }), model]));
+    const model = el("select", {}, ["models-se", "models-pro", "models-nose"].map((m) => el("option", { value: m, text: uiMessage(m) })));
+    optsWrap.append(noise.node, scale.node, el("div", { class: "field" }, [el("label", { text: uiMessage("超分模型") }), model]));
     options.noise = noise.input;
     options.scale = scale.input;
     options.model = model;
   } else if (eng.id === "anime4k") {
     const zoom = sliderField("🔍 放大倍数", 1, 32, 1, 2);
     const hdn = sliderField("🎚️ HDN 等级", 1, 3, 1, 3);
-    const gpu = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? "GPU 加速" : "CPU" })));
-    const cnn = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? "ACNet 模式" : "普通模式" })));
-    const hdnEn = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? "HDN 开启" : "HDN 关闭" })));
+    const gpu = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? uiMessage("GPU 加速") : uiMessage("CPU") })));
+    const cnn = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? uiMessage("ACNet 模式") : uiMessage("普通模式") })));
+    const hdnEn = el("select", {}, ["true", "false"].map((v) => el("option", { value: v, text: v === "true" ? uiMessage("HDN 开启") : uiMessage("HDN 关闭") })));
     optsWrap.append(zoom.node, hdn.node,
       el("div", { class: "field" }, [el("label", { text: "GPU" }), gpu]),
       el("div", { class: "field" }, [el("label", { text: "CNN" }), cnn]),
@@ -146,17 +147,17 @@ function renderEngine(eng, body) {
     options.cnn = cnn;
     options.hdn_enabled = hdnEn;
   } else {
-    const mode = el("select", {}, ["noise", "scale", "noise_scale"].map((m) => el("option", { value: m, text: m })));
-    const process = el("select", {}, ["cpu", "gpu", "cudnn"].map((m) => el("option", { value: m, text: m })));
+    const mode = el("select", {}, ["noise", "scale", "noise_scale"].map((m) => el("option", { value: m, text: uiMessage(m) })));
+    const process = el("select", {}, ["cpu", "gpu", "cudnn"].map((m) => el("option", { value: m, text: uiMessage(m) })));
     const scale = sliderField("🔍 放大倍数", 1, 32, 1, 2);
     const noise = sliderField("🔇 降噪强度", 0, 3, 1, 3);
-    const model = el("select", {}, ["anime_style_art_rgb","anime_style_art","photo","upconv_7_anime_style_art_rgb","upconv_7_photo","upresnet10","cunet","ukbench"].map((m) => el("option", { value: m, text: m })));
+    const model = el("select", {}, ["anime_style_art_rgb","anime_style_art","photo","upconv_7_anime_style_art_rgb","upconv_7_photo","upresnet10","cunet","ukbench"].map((m) => el("option", { value: m, text: uiMessage(m) })));
     model.value = "cunet";
     optsWrap.append(
-      el("div", { class: "field" }, [el("label", { text: "模式" }), mode]),
-      el("div", { class: "field" }, [el("label", { text: "处理模式" }), process]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("模式") }), mode]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("处理模式") }), process]),
       scale.node, noise.node,
-      el("div", { class: "field" }, [el("label", { text: "超分模型" }), model]));
+      el("div", { class: "field" }, [el("label", { text: uiMessage("超分模型") }), model]));
     options.mode = mode;
     options.process = process;
     options.scale = scale.input;
@@ -164,8 +165,8 @@ function renderEngine(eng, body) {
     options.model = model;
   }
 
-  const runBtn = el("button", { class: "btn btn-primary", text: "🚀 开始生成" });
-  const stopBtn = el("button", { class: "btn btn-danger", text: "⏹ 停止" });
+  const runBtn = el("button", { class: "btn btn-primary", text: uiMessage("🚀 开始生成") });
+  const stopBtn = el("button", { class: "btn btn-danger", text: uiMessage("⏹ 停止") });
   stopBtn.addEventListener("click", async () => {
     toast("正在停止生成...", "warning");
     try {
@@ -185,13 +186,13 @@ function renderEngine(eng, body) {
       options: Object.fromEntries(Object.entries(options).map(([k, v]) => [k, v.value])),
     };
     runBtn.disabled = true;
-    infoEl.textContent = "🚀 正在处理...";
+    setText(infoEl, uiMessage("🚀 正在处理..."));
     try {
       const res = await post("/api/upscale", payload);
       toast(`任务已启动: ${res.job_id}`, "success");
       runBtn.disabled = false;
     } catch (e) {
-      infoEl.textContent = "❌ " + e.message;
+      setText(infoEl, uiMessage("❌ " + e.message));
       toast(e.message, "error");
       runBtn.disabled = false;
     }

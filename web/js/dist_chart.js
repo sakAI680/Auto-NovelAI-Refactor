@@ -1,3 +1,4 @@
+import { m as uiMessage, setHTML } from "./i18n.js";
 // ============================================================
 // 分段 Beta 分布实时分布图 (随机画风插件)
 // 与后端 utils.generate_piecewise_beta 逻辑保持一致, 纯前端 Canvas 渲染,
@@ -213,12 +214,12 @@ export function drawBetaChart(canvas, params = {}) {
   ctx.fillStyle = T.text2;
   ctx.font = "11px system-ui, sans-serif";
   ctx.textAlign = "right";
-  ctx.fillText("权重", padL + plotW, padT + plotH + 33);
+  ctx.fillText(String(uiMessage("权重")), padL + plotW, padT + plotH + 33);
   ctx.save();
   ctx.translate(12, padT + plotH / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.textAlign = "center";
-  ctx.fillText("概率", 0, 0);
+  ctx.fillText(String(uiMessage("概率")), 0, 0);
   ctx.restore();
 
   // 顶部图例
@@ -235,7 +236,7 @@ export function drawBetaChart(canvas, params = {}) {
   ctx.fillRect(lx, padT - 22, 12, 9);
   lx += 16;
   ctx.fillStyle = T.text2;
-  ctx.fillText("直方图", lx, padT - 13);
+  ctx.fillText(String(uiMessage("直方图")), lx, padT - 13);
   lx += ctx.measureText("直方图").width + 12;
   // 平滑曲线
   ctx.strokeStyle = T.success;
@@ -243,7 +244,7 @@ export function drawBetaChart(canvas, params = {}) {
   ctx.beginPath(); ctx.moveTo(lx, padT - 18); ctx.lineTo(lx + 14, padT - 18); ctx.stroke();
   lx += 18;
   ctx.fillStyle = T.text2;
-  ctx.fillText("平滑曲线", lx, padT - 13);
+  ctx.fillText(String(uiMessage("平滑曲线")), lx, padT - 13);
   lx += ctx.measureText("平滑曲线").width + 14;
   // 参考线 (带数值)
   for (const r of refs) {
@@ -254,7 +255,7 @@ export function drawBetaChart(canvas, params = {}) {
     ctx.setLineDash([]);
     lx += 18;
     ctx.fillStyle = T.text2;
-    ctx.fillText(r.label, lx, padT - 13);
+    ctx.fillText(String(uiMessage(r.label)), lx, padT - 13);
     lx += ctx.measureText(r.label).width + 14;
   }
 
@@ -321,10 +322,7 @@ function bindChartTooltip(canvas) {
     const hiV = loV + d.bw;
     const count = d.counts[bar.i];
     const pct = (count / d.total) * 100;
-    tip.innerHTML =
-      "<b>权重 " + fmt(loV, 2) + " ~ " + fmt(hiV, 2) + "</b><br>" +
-      "概率: " + count + "<br>" +
-      "占比: " + pct.toFixed(2) + "%";
+    setHTML(tip, uiMessage("<b>权重 {0} ~ {1}</b><br>概率: {2}<br>占比: {3}%", fmt(loV, 2), fmt(hiV, 2), count, pct.toFixed(2)));
     tip.classList.remove("hidden");
     const tw = tip.offsetWidth || 150;
     const th = tip.offsetHeight || 60;

@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute, textNode } from "../i18n.js";
 // ============================================================
 // 图片浏览视图: 浏览项目 outputs 目录下的图片
 //   左 1/4: 输出文件夹选择    右 3/4: 图片网格 (默认按文件名正序)
@@ -86,7 +87,7 @@ function makeFavStar(path, name) {
   const btn = el("button", {
     class: "browse-fav-star" + (on ? " on" : ""),
     type: "button",
-    title: on ? "取消收藏" : "收藏",
+    title: on ? uiMessage("取消收藏") : uiMessage("收藏"),
   });
   btn.textContent = on ? "★" : "☆";
   btn.addEventListener("click", async (e) => {
@@ -94,7 +95,7 @@ function makeFavStar(path, name) {
     const now = await toggleFav(path, name);
     btn.classList.toggle("on", now);
     btn.textContent = now ? "★" : "☆";
-    btn.title = now ? "取消收藏" : "收藏";
+    setAttribute(btn, "title", now ? uiMessage("取消收藏") : uiMessage("收藏"));
   });
   return btn;
 }
@@ -104,7 +105,7 @@ function makeBrowseDelBtn(path, name) {
   const btn = el("button", {
     class: "browse-del-btn",
     type: "button",
-    title: "把图片移动到系统回收站",
+    title: uiMessage("把图片移动到系统回收站"),
   });
   btn.append(iconTrash());
   btn.addEventListener("click", async (e) => {
@@ -154,7 +155,7 @@ function makeRevealBtn(path) {
   const btn = el("button", {
     class: "browse-reveal-btn",
     type: "button",
-    title: "在文件夹中显示",
+    title: uiMessage("在文件夹中显示"),
   });
   btn.append(iconFolder());
   btn.addEventListener("click", async (e) => {
@@ -213,7 +214,7 @@ function openViewer(path, name) {
   closeViewer();
   viewerEl = el("div", { class: "img-viewer-overlay" });
 
-  const img = el("img", { src: imageUrl(path), alt: name || "", title: "点击切换 原始大小 / 适应窗口" });
+  const img = el("img", { src: imageUrl(path), alt: name || "", title: uiMessage("点击切换 原始大小 / 适应窗口") });
   let zoomed = false;
   img.addEventListener("click", () => {
     zoomed = !zoomed;
@@ -223,7 +224,7 @@ function openViewer(path, name) {
   });
 
   const mkBtn = (text, action) => {
-    const b = el("button", { class: "btn", type: "button", text });
+    const b = el("button", { class: "btn", type: "button", text: uiMessage(text) });
     b.addEventListener("click", () => {
       closeViewer();
       handleViewerAction(action, path);
@@ -236,18 +237,18 @@ function openViewer(path, name) {
   const favBtn = el("button", {
     class: "btn" + (favPaths.has(path) ? " btn-fav-on" : ""),
     type: "button",
-    title: "收藏图片",
+    title: uiMessage("收藏图片"),
   });
-  favBtn.textContent = favPaths.has(path) ? "★ 已收藏 (点击取消)" : "☆ 收藏";
+  setText(favBtn, favPaths.has(path) ? uiMessage("★ 已收藏 (点击取消)") : uiMessage("☆ 收藏"));
   favBtn.addEventListener("click", async () => {
     const now = await toggleFav(path, name);
-    favBtn.textContent = now ? "★ 已收藏 (点击取消)" : "☆ 收藏";
+    setText(favBtn, now ? uiMessage("★ 已收藏 (点击取消)") : uiMessage("☆ 收藏"));
     favBtn.classList.toggle("btn-fav-on", now);
   });
 
   // 删除按钮: 确认后把图片移到系统回收站 (send2trash), 成功后刷新网格
-  const delBtn = el("button", { class: "btn btn-danger", type: "button", text: "🗑️ 删除" });
-  delBtn.title = "把图片移动到系统回收站";
+  const delBtn = el("button", { class: "btn btn-danger", type: "button", text: uiMessage("🗑️ 删除") });
+  setAttribute(delBtn, "title", uiMessage("把图片移动到系统回收站"));
   delBtn.addEventListener("click", async () => {
     const ok = await confirmDialog(`确定将图片「${name || path}」移动到回收站吗？`, { danger: true });
     if (!ok) return;
@@ -264,19 +265,19 @@ function openViewer(path, name) {
   });
 
   // 在文件夹中显示: 不关闭查看器 (文件管理器弹出在当前窗口之后, 切回来仍在看图)
-  const revealBtn = el("button", { class: "btn", type: "button", text: "📂 在文件夹中显示" });
-  revealBtn.title = "在系统文件管理器中打开所在文件夹并选中该图片";
+  const revealBtn = el("button", { class: "btn", type: "button", text: uiMessage("📂 在文件夹中显示") });
+  setAttribute(revealBtn, "title", uiMessage("在系统文件管理器中打开所在文件夹并选中该图片"));
   revealBtn.addEventListener("click", () => revealInFolder(path));
 
   viewerEl.append(
     el("div", { class: "img-viewer-head" }, [
       el("span", { class: "img-viewer-name", text: name || "" }),
-      el("button", { class: "btn btn-sm btn-danger", type: "button", text: "✖ 关闭", onclick: closeViewer }),
+      el("button", { class: "btn btn-sm btn-danger", type: "button", text: uiMessage("✖ 关闭"), onclick: closeViewer }),
     ]),
     el("div", { class: "img-viewer-body" }, [
       el("div", { class: "img-viewer-img-wrap" }, [img]),
       el("div", { class: "img-viewer-side" }, [
-        el("div", { class: "img-viewer-tip", text: "操作在主界面完成: 导入生成参数 / 载入图生图基础图片 / 打开法术解析 / 在文件夹中显示 / 删除 (移到回收站)。点击图片可切换原始大小。" }),
+        el("div", { class: "img-viewer-tip", text: uiMessage("操作在主界面完成: 导入生成参数 / 载入图生图基础图片 / 打开法术解析 / 在文件夹中显示 / 删除 (移到回收站)。点击图片可切换原始大小。") }),
         mkBtn("🎯 使用该图片参数", "use-params"),
         mkBtn("🖼️ 发送到图片生成", "to-img2img"),
         mkBtn("🔮 发送到法术解析", "to-pnginfo"),
@@ -332,7 +333,7 @@ function makeGridItem(img) {
   // path 是后端返回的相对 outputs 路径; 全屏看图 / 删除 / 收藏 / 参数导入等
   // 一律使用绝对路径 _abs, 避免按项目根解析不到文件 (放大显示空白 404 的根因)
   const full = img._abs || img.path;
-  const item = el("div", { class: "browse-item", title: `${img.name}\n单击全屏查看` });
+  const item = el("div", { class: "browse-item", title: uiMessage("{0}\n单击全屏查看", img.name) });
   const pic = el("img", { alt: img.name, loading: "lazy", decoding: "async" });
   // 缩略图加载失败 (不支持的格式/损坏文件) 时回退加载原图
   pic.addEventListener("error", () => {
@@ -404,11 +405,11 @@ function renderGrid() {
   // 收藏模式: 按收藏时间倒序展示 (最近收藏在前), 不参与目录排序
   const favMode = state.favMode;
   const list = favMode ? state.favItems : sortedImages();
-  if (count) count.textContent = favMode ? `共 ${list.length} 张收藏` : `共 ${list.length} 张图片`;
+  if (count) setText(count, favMode ? uiMessage("共 {0} 张收藏", list.length) : uiMessage("共 {0} 张图片", list.length));
   if (!list.length) {
     renderedCount = 0;
     renderedSigs = new Set();
-    grid.append(el("div", { class: "browse-empty", text: favMode ? "还没有收藏的图片 — 点击图片右上角 ☆ 即可收藏" : "该目录下没有图片" }));
+    grid.append(el("div", { class: "browse-empty", text: favMode ? uiMessage("还没有收藏的图片 — 点击图片右上角 ☆ 即可收藏") : uiMessage("该目录下没有图片") }));
     return;
   }
   // 滚动加载: 只渲染第一页, 滚动到底部时由哨兵继续加载 (大量图片时不再一次性创建上万个节点)
@@ -426,7 +427,7 @@ function syncGrid() {
   const count = document.getElementById("browse-count");
   if (!count) return;
   const list = sortedImages();
-  count.textContent = `共 ${list.length} 张图片`;
+  setText(count, uiMessage("共 {0} 张图片", list.length));
   if (!list.length || renderedCount === 0) {
     renderGrid();   // 全部删光 / 本来就空: 重渲染显示空态
     return;
@@ -477,7 +478,7 @@ function folderRow(path, label, depth, hasChildren) {
   const caret = el("span", {
     class: "browse-caret" + (hasChildren ? "" : " leaf"),
     text: hasChildren ? (open ? "▾" : "▸") : "",
-    title: hasChildren ? (open ? "收起子文件夹" : "展开子文件夹") : "",
+    title: hasChildren ? open ? uiMessage("收起子文件夹") : uiMessage("展开子文件夹") : uiMessage(""),
   });
   caret.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -489,7 +490,7 @@ function folderRow(path, label, depth, hasChildren) {
   row.append(
     caret,
     el("span", { text: path ? (open && hasChildren ? "📂" : "📁") : "🏠" }),
-    el("span", { text: label, style: "overflow:hidden;text-overflow:ellipsis;" }),
+    el("span", { text: path ? label : uiMessage(label), style: "overflow:hidden;text-overflow:ellipsis;" }),
   );
   row.addEventListener("click", async () => {
     state.dir = path;
@@ -531,7 +532,7 @@ async function loadFolders() {
 
 async function loadImages() {
   const grid = document.getElementById("browse-grid");
-  if (grid) { clear(grid); grid.append(el("div", { class: "browse-empty", text: "🌸 正在加载..." })); }
+  if (grid) { clear(grid); grid.append(el("div", { class: "browse-empty", text: uiMessage("🌸 正在加载...") })); }
   // 收藏模式: 直接渲染收藏列表, 不请求目录
   if (state.favMode) {
     renderGrid();
@@ -648,25 +649,25 @@ export async function render(container, ctx) {
   startPolling();
 
   container.append(
-    el("h2", {}, ["📚 图片浏览", el("span", { class: "sub", text: "浏览 ./outputs 输出目录" })]),
+    el("h2", {}, [uiMessage("📚 图片浏览"), el("span", { class: "sub", text: uiMessage("浏览 ./outputs 输出目录") })]),
   );
 
   // 左 1/4: 文件夹选择 (可收起/展开)
   const layout = el("div", { class: "browse-layout" });
   const leftCard = el("div", { class: "card browse-left", style: "margin:0;" }, [
     el("div", { class: "wc-browse-head browse-left-head" }, [
-      el("div", { class: "card-title", text: "📂 文件夹" }),
+      el("div", { class: "card-title", text: uiMessage("📂 文件夹") }),
       el("span", { class: "spacer" }),
-      el("button", { class: "btn btn-sm", text: "🔄 刷新", onclick: refreshAll }),
+      el("button", { class: "btn btn-sm", text: uiMessage("🔄 刷新"), onclick: refreshAll }),
       el("button", {
         class: "btn btn-sm",
         text: "◀",
-        title: "收起文件夹区域",
+        title: uiMessage("收起文件夹区域"),
         onclick: () => layout.classList.add("left-collapsed"),
       }),
     ]),
     el("div", { class: "browse-folders", id: "browse-folders" }, [
-      el("div", { class: "muted", style: "padding:10px;", text: "正在读取..." }),
+      el("div", { class: "muted", style: "padding:10px;", text: uiMessage("正在读取...") }),
     ]),
     // 我的收藏: 仅保存路径引用, 不移动/复制文件
     el("div", { class: "browse-fav-section" }, [
@@ -674,28 +675,28 @@ export async function render(container, ctx) {
         class: "browse-fav-btn" + (state.favMode ? " active" : ""),
         id: "browse-fav-btn",
         type: "button",
-        title: "查看所有收藏的图片 (收藏仅保存路径, 不移动/复制文件)",
+        title: uiMessage("查看所有收藏的图片 (收藏仅保存路径, 不移动/复制文件)"),
       }, [
         el("span", { text: "⭐" }),
-        el("span", { text: "我的收藏" }),
+        el("span", { text: uiMessage("我的收藏") }),
         el("span", { class: "browse-fav-count", id: "browse-fav-count", text: "0" }),
       ]),
     ]),
     el("button", {
       class: "browse-left-expand",
       type: "button",
-      title: "展开文件夹区域",
+      title: uiMessage("展开文件夹区域"),
       onclick: () => layout.classList.remove("left-collapsed"),
     }, [
       el("span", { text: "▶" }),
-      el("span", { text: "文件夹" }),
+      el("span", { text: uiMessage("文件夹") }),
     ]),
   ]);
 
   // 右 3/4: 图片网格 + 排序/递归控件
   const sortSel = el("select", {}, [
     ["name", "按文件名"], ["mtime", "按修改时间"], ["size", "按文件大小"],
-  ].map(([v, t]) => el("option", { value: v, text: t })));
+  ].map(([v, t]) => el("option", { value: v, text: uiMessage(t) })));
   sortSel.value = state.sortKey;
   sortSel.addEventListener("change", () => {
     state.sortKey = sortSel.value;
@@ -710,29 +711,29 @@ export async function render(container, ctx) {
   const dirBtn = el("button", {
     class: "btn btn-sm",
     type: "button",
-    text: state.sortAsc ? "↑ 正序" : "↓ 倒序",
-    title: "切换正序 / 倒序",
+    text: state.sortAsc ? uiMessage("↑ 正序") : uiMessage("↓ 倒序"),
+    title: uiMessage("切换正序 / 倒序"),
   });
   dirBtn.addEventListener("click", () => {
     state.sortAsc = !state.sortAsc;
-    dirBtn.textContent = state.sortAsc ? "↑ 正序" : "↓ 倒序";
+    setText(dirBtn, state.sortAsc ? uiMessage("↑ 正序") : uiMessage("↓ 倒序"));
     renderGrid();
   });
   const rightCard = el("div", { class: "card", style: "margin:0;" }, [
     el("div", { class: "browse-head" }, [
-      el("div", { class: "card-title", text: "🖼️ 图片" }),
+      el("div", { class: "card-title", text: uiMessage("🖼️ 图片") }),
       el("span", { class: "muted", id: "browse-count", text: "" }),
       el("span", { class: "spacer" }),
-      el("span", { class: "muted", text: "排序" }),
+      el("span", { class: "muted", text: uiMessage("排序") }),
       sortSel,
-      el("label", { class: "browse-recursive", title: "同时显示所选文件夹的子文件夹中的图片" }, [
+      el("label", { class: "browse-recursive", title: uiMessage("同时显示所选文件夹的子文件夹中的图片") }, [
         recursiveCb,
-        document.createTextNode("递归展示"),
+        textNode(uiMessage("递归展示")),
       ]),
       dirBtn,
     ]),
     el("div", { class: "browse-grid", id: "browse-grid" }, [
-      el("div", { class: "browse-empty", text: "选择左侧文件夹后显示图片" }),
+      el("div", { class: "browse-empty", text: uiMessage("选择左侧文件夹后显示图片") }),
     ]),
   ]);
 

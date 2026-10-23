@@ -1,3 +1,4 @@
+import { m as uiMessage, setText } from "../i18n.js";
 // ============================================================
 // 法术解析视图: 读取信息 / 图片反推 / 抹除数据 (已迁移到「图片工具」插件)
 // ============================================================
@@ -16,7 +17,7 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["🔮 法术解析", el("span", { class: "sub", text: "读取 / 反推图片信息" })]),
+    el("h2", {}, [uiMessage("🔮 法术解析"), el("span", { class: "sub", text: uiMessage("读取 / 反推图片信息") })]),
   );
   const tabsWrap = el("div");
   container.append(tabsWrap);
@@ -154,14 +155,14 @@ function renderRead(body) {
   const box = el("div", { class: "card spell-card", style: "margin-top:12px;display:none;" });
   const fields = { params: {}, meta: {}, box };
 
-  const promptTA = el("textarea", { rows: 6, readonly: true, placeholder: "读取后显示" });
-  const negTA = el("textarea", { rows: 6, readonly: true, placeholder: "读取后显示" });
+  const promptTA = el("textarea", { rows: 6, readonly: true, placeholder: uiMessage("读取后显示") });
+  const negTA = el("textarea", { rows: 6, readonly: true, placeholder: uiMessage("读取后显示") });
   fields.prompt = promptTA;
   fields.negative = negTA;
   // 正/负面提示词区域可弹性伸展, 充分利用右侧纵向空间
   box.append(
-    el("div", { class: "spell-sec grow" }, [el("div", { class: "spell-sec-title", text: "✨ 正面提示词" }), promptTA]),
-    el("div", { class: "spell-sec grow" }, [el("div", { class: "spell-sec-title", text: "🌙 负面提示词" }), negTA]),
+    el("div", { class: "spell-sec grow" }, [el("div", { class: "spell-sec-title", text: uiMessage("✨ 正面提示词") }), promptTA]),
+    el("div", { class: "spell-sec grow" }, [el("div", { class: "spell-sec-title", text: uiMessage("🌙 负面提示词") }), negTA]),
   );
 
   const grid = el("div", { class: "spell-grid" });
@@ -172,35 +173,35 @@ function renderRead(body) {
   ];
   params.forEach(([key, label]) => {
     const val = el("span", { class: "spell-val", text: "" });
-    const item = el("div", { class: "spell-item", style: "display:none;" }, [el("span", { class: "spell-label", text: label }), val]);
+    const item = el("div", { class: "spell-item", style: "display:none;" }, [el("span", { class: "spell-label", text: uiMessage(label) }), val]);
     fields.params[key] = { item, val };
     grid.append(item);
   });
-  box.append(el("div", { class: "spell-sec" }, [el("div", { class: "spell-sec-title", text: "⚙️ 参数" }), grid]));
+  box.append(el("div", { class: "spell-sec" }, [el("div", { class: "spell-sec-title", text: uiMessage("⚙️ 参数") }), grid]));
 
   const metaBox = el("div", { class: "spell-meta" });
   [["source", "Source"], ["generation_time", "Generation time"], ["software", "Software"], ["description", "Description"]].forEach(([key, label]) => {
     const val = el("span", { class: "spell-val", text: "" });
-    const item = el("div", { class: "spell-item", style: "display:none;" }, [el("span", { class: "spell-label", text: label }), val]);
+    const item = el("div", { class: "spell-item", style: "display:none;" }, [el("span", { class: "spell-label", text: uiMessage(label) }), val]);
     fields.meta[key] = { item, val };
     metaBox.append(item);
   });
-  box.append(el("div", { class: "spell-sec" }, [el("div", { class: "spell-sec-title", text: "📄 元数据" }), metaBox]));
+  box.append(el("div", { class: "spell-sec" }, [el("div", { class: "spell-sec-title", text: uiMessage("📄 元数据") }), metaBox]));
 
   // Comment (位于元数据与全部信息之间)
-  const commentTA = el("textarea", { rows: 8, readonly: true, class: "mono-ta", placeholder: "读取后显示" });
+  const commentTA = el("textarea", { rows: 8, readonly: true, class: "mono-ta", placeholder: uiMessage("读取后显示") });
   fields.comment = commentTA;
   box.append(el("div", { class: "spell-sec" }, [el("div", { class: "spell-sec-title", text: "💬 Comment" }), commentTA]));
 
-  const allTA = el("textarea", { rows: 8, readonly: true, class: "mono-ta", placeholder: "读取后显示" });
+  const allTA = el("textarea", { rows: 8, readonly: true, class: "mono-ta", placeholder: uiMessage("读取后显示") });
   // 全部信息默认隐藏, 单击标题/按钮展开, 再次单击收起
   const allWrap = el("div", { class: "spell-sec collapsed" });
-  const allToggle = el("button", { class: "mini-btn", type: "button", text: "展开" });
+  const allToggle = el("button", { class: "mini-btn", type: "button", text: uiMessage("展开") });
   function syncAllToggle() {
-    allToggle.textContent = allWrap.classList.contains("collapsed") ? "展开" : "收起";
+    setText(allToggle, allWrap.classList.contains("collapsed") ? uiMessage("展开") : uiMessage("收起"));
   }
   allToggle.addEventListener("click", (e) => { e.stopPropagation(); allWrap.classList.toggle("collapsed"); syncAllToggle(); });
-  const allHead = el("div", { class: "spell-sec-title", style: "cursor:pointer;" }, [el("span", { text: "🗂 全部信息 (JSON)" }), allToggle]);
+  const allHead = el("div", { class: "spell-sec-title", style: "cursor:pointer;" }, [el("span", { text: uiMessage("🗂 全部信息 (JSON)") }), allToggle]);
   allHead.addEventListener("click", () => { allWrap.classList.toggle("collapsed"); syncAllToggle(); });
   allWrap.append(allHead, allTA);
   fields.all = allTA;
@@ -208,7 +209,7 @@ function renderRead(body) {
 
   pnginfoReadFields = fields;
 
-  const sendBtn = el("button", { class: "btn btn-primary", text: "📤 发送到图片生成", style: "width:100%;" });
+  const sendBtn = el("button", { class: "btn btn-primary", text: uiMessage("📤 发送到图片生成"), style: "width:100%;" });
   sendBtn.addEventListener("click", async () => {
     try {
       const params = await post("/api/pnginfo/to-generate", { image_path: picker.get() });
@@ -240,12 +241,12 @@ function autoSizeTA(ta) {
 function renderDictBars(container, dict) {
   clear(container);
   if (!dict || typeof dict !== "object") {
-    container.append(el("div", { class: "muted", text: "无数据" }));
+    container.append(el("div", { class: "muted", text: uiMessage("无数据") }));
     return;
   }
   const entries = Object.entries(dict).sort((a, b) => b[1] - a[1]);
   if (!entries.length) {
-    container.append(el("div", { class: "muted", text: "无数据" }));
+    container.append(el("div", { class: "muted", text: uiMessage("无数据") }));
     return;
   }
   entries.forEach(([label, conf]) => {
@@ -262,7 +263,7 @@ function renderDictBars(container, dict) {
 
 function renderTagger(body) {
   const picker = imageDropZone({ label: "🖼️ 图片", placeholder: "点击选择或拖入图片", native: true });
-  const modelSel = el("select", {}, S.app.tagger_models.map((m) => el("option", { value: m, text: m })));
+  const modelSel = el("select", {}, S.app.tagger_models.map((m) => el("option", { value: m, text: uiMessage(m) })));
   const genThresh = el("input", { type: "number", min: 0, max: 1, step: 0.05, value: 0.35 });
   const genMcut = el("input", { type: "checkbox" });
   const charThresh = el("input", { type: "number", min: 0, max: 1, step: 0.05, value: 0.85 });
@@ -270,9 +271,9 @@ function renderTagger(body) {
   const outBox = el("div", { class: "card", style: "margin-top:12px;" });
 
   // 四个区块始终展示 (不需要反推后才出现), 反推后填充数据
-  const str = el("textarea", { rows: 3, readonly: true, placeholder: "反推后显示" });
+  const str = el("textarea", { rows: 3, readonly: true, placeholder: uiMessage("反推后显示") });
   str.addEventListener("input", () => autoSizeTA(str));
-  const sendBtn = el("button", { class: "btn btn-sm", text: "📤 发送到正面提示词" });
+  const sendBtn = el("button", { class: "btn btn-sm", text: uiMessage("📤 发送到正面提示词") });
   sendBtn.addEventListener("click", () => {
     const p = getC();
     // stripTextSection: 与法术解析"发送到图片生成"一致, 不把 teXt 段带进生图表单
@@ -281,7 +282,7 @@ function renderTagger(body) {
   const ratingBox = el("div", { class: "dict-bars" });
   const charBox = el("div", { class: "dict-bars" });
   const tagsBox = el("div", { class: "dict-bars dict-bars-scroll" });
-  [ratingBox, charBox, tagsBox].forEach((b) => b.append(el("div", { class: "muted", text: "尚未反推" })));
+  [ratingBox, charBox, tagsBox].forEach((b) => b.append(el("div", { class: "muted", text: uiMessage("尚未反推") })));
   outBox.append(
     el("div", { class: "tagger-sec" }, [
       el("div", { class: "tagger-sec-title" }, [el("span", { text: "Output (string)" }), sendBtn]),
@@ -292,7 +293,7 @@ function renderTagger(body) {
     el("div", { class: "tagger-sec" }, [el("div", { class: "tagger-sec-title", text: "Tags" }), tagsBox]),
   );
 
-  const submitBtn = el("button", { class: "btn btn-primary", text: "🚀 提交反推" });
+  const submitBtn = el("button", { class: "btn btn-primary", text: uiMessage("🚀 提交反推") });
   submitBtn.addEventListener("click", async () => {
     if (!picker.get()) { toast("请先上传图片", "warning"); return; }
     submitBtn.disabled = true;
@@ -377,7 +378,7 @@ async function openImageToolsClearPanel() {
 
 /** 抹除数据页签的说明: 功能已迁移, 这里只提供入口 (原单张/批处理控件与后端接口已删除) */
 function renderRemoveNotice(body) {
-  const goBtn = el("button", { class: "btn btn-primary", text: "🧹 打开[图片工具•清除元数据]" });
+  const goBtn = el("button", { class: "btn btn-primary", text: uiMessage("🧹 打开[图片工具•清除元数据]") });
   goBtn.addEventListener("click", () => { openImageToolsClearPanel(); });
 
   const items = [
@@ -388,17 +389,17 @@ function renderRemoveNotice(body) {
     "可顺带转换格式与调整质量, 默认不覆盖原图 (输出为「原名 + 后缀」, 也可指定输出目录或覆盖原图)。",
   ];
   const list = el("ul", { style: "margin:6px 0 10px 20px;line-height:2;font-size:13px;color:var(--text-2);" });
-  items.forEach((t) => list.append(el("li", { text: t })));
+  items.forEach((t) => list.append(el("li", { text: uiMessage(t) })));
 
   body.append(
     el("div", { class: "card", style: "max-width:960px;" }, [
-      el("div", { class: "card-title", text: "🧼 抹除数据已迁移到「图片工具」插件" }),
+      el("div", { class: "card-title", text: uiMessage("🧼 抹除数据已迁移到「图片工具」插件") }),
       el("p", {
         class: "muted",
-        text: "本页原来的单张 / 批处理抹除入口已移除, 请改用「图片工具」插件的「🧹 清除元数据」面板 —— 它比这里更彻底, 也更安全:",
+        text: uiMessage("本页原来的单张 / 批处理抹除入口已移除, 请改用「图片工具」插件的「🧹 清除元数据」面板 —— 它比这里更彻底, 也更安全:"),
       }),
       list,
-      el("p", { class: "muted", text: "→ 只查看信息或把参数还原到图片生成, 用本页的「📖 读取信息」页签即可, 无需抹除。" }),
+      el("p", { class: "muted", text: uiMessage("→ 只查看信息或把参数还原到图片生成, 用本页的「📖 读取信息」页签即可, 无需抹除。") }),
       // 入口按钮: 放在说明的左下方
       el("div", { style: "margin-top:14px;" }, [goBtn]),
     ]),
