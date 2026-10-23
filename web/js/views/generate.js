@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute, textNode } from "../i18n.js";
 // ============================================================
 // 图片生成视图 (ANR 原有 Gradio 布局)
 //   Row1: 提示词(左) + 模型/预设/生成按钮(右)
@@ -52,11 +53,11 @@ let anlasRefreshBtn = null;    // 徽标右侧的「🔄 刷新」按钮 (手动
 
 function field(label, type = "text", opts = {}) {
   const wrap = el("div", { class: "field" });
-  const lbl = el("label", { text: label });
+  const lbl = el("label", { text: uiMessage(label) });
   let input;
 
   if (type === "select") {
-    input = el("select", {}, (opts.options || []).map((o) => el("option", { value: o, text: o })));
+    input = el("select", {}, (opts.options || []).map((o) => el("option", { value: o, text: uiMessage(o) })));
     if (opts.value !== undefined) input.value = opts.value;
     wrap.append(lbl, input);
     return {
@@ -64,25 +65,25 @@ function field(label, type = "text", opts = {}) {
       setOptions: (options) => {
         const cur = input.value;
         input.innerHTML = "";
-        for (const o of options) input.append(el("option", { value: o, text: o }));
+        for (const o of options) input.append(el("option", { value: o, text: uiMessage(o) }));
         if (options.includes(cur)) input.value = cur;
       },
     };
   } else if (type === "checkbox") {
     input = el("input", { type: "checkbox" });
     input.checked = !!opts.value;
-    wrap.append(el("label", { class: "checkline" }, [input, document.createTextNode(label)]));
+    wrap.append(el("label", { class: "checkline" }, [input, textNode(uiMessage(label))]));
     return { node: wrap, input, get: () => input.checked, set: (v) => { input.checked = !!v; } };
   } else if (type === "slider") {
     const s = sliderRow({ min: opts.min ?? 0, max: opts.max ?? 100, step: opts.step ?? 1, value: opts.value ?? 0 });
     wrap.append(lbl, s.node);
     return { node: wrap, input: s.input, num: s.num, get: () => s.get(), set: (v) => s.set(v) };
   } else if (type === "textarea") {
-    input = el("textarea", { rows: opts.rows ?? 3, placeholder: opts.placeholder || "", value: opts.value ?? "" });
+    input = el("textarea", { rows: opts.rows ?? 3, placeholder: uiMessage(opts.placeholder || ""), value: opts.value ?? "" });
     wrap.append(lbl, input);
     return { node: wrap, input, get: () => input.value, set: (v) => { input.value = v; } };
   } else {
-    input = el("input", { type, value: opts.value ?? "", placeholder: opts.placeholder || "" });
+    input = el("input", { type, value: opts.value ?? "", placeholder: uiMessage(opts.placeholder || "") });
     wrap.append(lbl, input);
     return { node: wrap, input, get: () => input.value, set: (v) => { input.value = v; } };
   }
@@ -95,7 +96,7 @@ export async function render(container, ctx) {
   clear(container);
   const saved = buildSavedState();
 
-  container.append(el("h2", {}, ["🖼️ 图片生成", el("span", { class: "sub", text: "NovelAI 批量生图" })]));
+  container.append(el("h2", {}, [uiMessage("🖼️ 图片生成"), el("span", { class: "sub", text: uiMessage("NovelAI 批量生图") })]));
 
   // 标题下方 / 提示词上方: 单条工具条 (左: 模型+Mode, 右: 数量+生成按钮)
   const modelBar = el("div", { class: "model-bar" });
@@ -326,9 +327,9 @@ function buildSavedState() {
 
 /** 标题行右侧的小号预设下拉 */
 function cornerSelect(labelText, options) {
-  const select = el("select", { class: "corner-select" }, options.map((o) => el("option", { value: o, text: o })));
+  const select = el("select", { class: "corner-select" }, options.map((o) => el("option", { value: o, text: uiMessage(o) })));
   const node = el("div", { class: "prompt-corner" }, [
-    el("span", { class: "prompt-corner-label", text: labelText }),
+    el("span", { class: "prompt-corner-label", text: uiMessage(labelText) }),
     select,
   ]);
   return {
@@ -339,7 +340,7 @@ function cornerSelect(labelText, options) {
     setOptions: (opts) => {
       const cur = select.value;
       select.innerHTML = "";
-      for (const o of opts) select.append(el("option", { value: o, text: o }));
+      for (const o of opts) select.append(el("option", { value: o, text: uiMessage(o) }));
       if (opts.includes(cur)) select.value = cur;
     },
   };
@@ -350,7 +351,7 @@ function segChoice(options, value, onChange = null) {
   const group = el("div", { class: "opt-group" });
   const items = {};
   options.forEach((o) => {
-    const item = el("label", { class: "opt-item" + (o === value ? " selected" : ""), text: o });
+    const item = el("label", { class: "opt-item" + (o === value ? " selected" : ""), text: uiMessage(o) });
     item.addEventListener("click", () => {
       Object.values(items).forEach((x) => x.classList.remove("selected"));
       item.classList.add("selected");
@@ -391,10 +392,10 @@ function autosizeRows(ta, { minRows = 6, maxRows = 15 } = {}) {
 /** 提示词输入块: 节标题(左) + 右侧按钮组(Wildcards/预设等) + 多行输入框 (高度 6~15 行自适应) */
 function promptField(title, presetCtl, opts) {
   const wrap = el("div", { class: "field prompt-field" });
-  const ta = el("textarea", { rows: 6, placeholder: opts.placeholder || "", value: opts.value ?? "" });
+  const ta = el("textarea", { rows: 6, placeholder: uiMessage(opts.placeholder || ""), value: opts.value ?? "" });
   const fit = autosizeRows(ta);
   const head = el("div", { class: "prompt-head" }, [
-    el("span", { class: "prompt-title", text: title }),
+    el("span", { class: "prompt-title", text: uiMessage(title) }),
     el("div", { class: "prompt-head-right" }, [
       opts.loadBtn || null,
       wildcardsButton(ta, { title, text: "🃏 Wildcards" }),
@@ -410,12 +411,12 @@ function promptField(title, presetCtl, opts) {
 
 function buildPromptCard(saved) {
   const card = el("div", { class: "card" }, [
-    el("div", { class: "card-title" }, ["📝 提示词", el("span", { class: "badge", text: "支持 wildcards" })]),
+    el("div", { class: "card-title" }, [uiMessage("📝 提示词"), el("span", { class: "badge", text: uiMessage("支持 wildcards") })]),
   ]);
 
   C.quality = cornerSelect("⭐ 正面预设", S.app.qp_presets || []);
   C.quality.set(saved.quality ?? "Standard");
-  const loadPosBtn = el("button", { class: "mini-btn", type: "button", text: "🔁 加载上次", title: "载入上次生成的正面提示词" });
+  const loadPosBtn = el("button", { class: "mini-btn", type: "button", text: uiMessage("🔁 加载上次"), title: uiMessage("载入上次生成的正面提示词") });
   loadPosBtn.addEventListener("click", async () => {
     try {
       const last = await fetchLast();
@@ -433,7 +434,7 @@ function buildPromptCard(saved) {
     } catch (e) { toast(e.message, "error"); }
   });
   transparentBg = !!saved.transparent_bg;
-  tbBtn = el("button", { class: "mini-btn tb-btn", type: "button", text: "🪟 Transparent BG", title: "仅 v5 模型可用: 开启后生成时在提示词末尾追加 transparent background (质量预设与 teXt 段之前)" });
+  tbBtn = el("button", { class: "mini-btn tb-btn", type: "button", text: "🪟 Transparent BG", title: uiMessage("仅 v5 模型可用: 开启后生成时在提示词末尾追加 transparent background (质量预设与 teXt 段之前)") });
   tbBtn.addEventListener("click", () => { transparentBg = !transparentBg; updateTbBtn(); });
   updateTbBtn();
   C.positive = promptField("✨ 正面提示词", C.quality, { value: saved.positive_prompt ?? "", placeholder: "在此输入正面提示词...", rows: 6, loadBtn: loadPosBtn, tbBtn });
@@ -441,7 +442,7 @@ function buildPromptCard(saved) {
 
   C.uc = cornerSelect("🚫 负面预设", S.app.uc_presets || []);
   C.uc.set(saved.uc ?? "Heavy");
-  const loadNegBtn = el("button", { class: "mini-btn", type: "button", text: "🔁 加载上次", title: "载入上次生成的负面提示词" });
+  const loadNegBtn = el("button", { class: "mini-btn", type: "button", text: uiMessage("🔁 加载上次"), title: uiMessage("载入上次生成的负面提示词") });
   loadNegBtn.addEventListener("click", async () => {
     try {
       const last = await fetchLast();
@@ -481,15 +482,15 @@ function buildOutputViewer(container, images) {
   container.classList.remove("gallery", "count-1", "count-2", "count-3", "count-4");
   container.classList.add("output-viewer");
   if (!images || images.length === 0) {
-    container.append(el("div", { class: "gallery-empty", text: "🌸 还没有图片, 去生成一张吧~" }));
+    container.append(el("div", { class: "gallery-empty", text: uiMessage("🌸 还没有图片, 去生成一张吧~") }));
     return;
   }
 
   let idx = 0;
-  const mainImg = el("img", { class: "output-viewer-img", alt: "输出图片" });
+  const mainImg = el("img", { class: "output-viewer-img", alt: uiMessage("输出图片") });
   const mainWrap = el("div", { class: "output-viewer-main" });
-  const prevBtn = el("button", { class: "output-viewer-nav output-viewer-prev", type: "button", html: "‹", title: "上一张" });
-  const nextBtn = el("button", { class: "output-viewer-nav output-viewer-next", type: "button", html: "›", title: "下一张" });
+  const prevBtn = el("button", { class: "output-viewer-nav output-viewer-prev", type: "button", html: "‹", title: uiMessage("上一张") });
+  const nextBtn = el("button", { class: "output-viewer-nav output-viewer-next", type: "button", html: "›", title: uiMessage("下一张") });
   mainWrap.append(prevBtn, nextBtn, mainImg);
   container.append(mainWrap);
 
@@ -499,7 +500,7 @@ function buildOutputViewer(container, images) {
   const thumbStrip = el("div", { class: "output-viewer-thumbs" });
   const HOVER_PRELOAD = 8;
   const thumbs = images.map((path, i) => {
-    const img = el("img", { decoding: "async", alt: "第 " + (i + 1) + " 张" });
+    const img = el("img", { decoding: "async", alt: uiMessage("第 {0} 张", i + 1) });
     img.dataset.src = imageUrl(path);
     const t = el("div", { class: "thumb-item" + (i === 0 ? " active" : "") }, [img]);
     t.addEventListener("click", () => { idx = i; updateView(); });
@@ -804,9 +805,9 @@ function buildModelBar(bar, saved) {
   C.quantity = field("🔢 生成数量", "slider", { min: 1, max: 999, step: 1, value: saved.quantity ?? 1 });
   C.quantity.node.classList.add("mb-quantity");
 
-  C.generateBtn = el("button", { class: "btn btn-primary btn-lg", text: "🚀 开始生成" });
-  C.stopBtn = el("button", { class: "btn btn-danger btn-lg", text: "⏹ 停止" });
-  C.stopBtn.title = "停止生成";
+  C.generateBtn = el("button", { class: "btn btn-primary btn-lg", text: uiMessage("🚀 开始生成") });
+  C.stopBtn = el("button", { class: "btn btn-danger btn-lg", text: uiMessage("⏹ 停止") });
+  setAttribute(C.stopBtn, "title", uiMessage("停止生成"));
 
   bar.append(
     C.model.node,
@@ -833,8 +834,8 @@ function buildVibeEditor(container) {
     const item = el("div", { class: "vibe-item" }, [
       el("div", { class: "vibe-left" }, [dz.node]),
       el("div", { class: "vibe-right" }, [
-        el("div", { class: "field" }, [el("label", { text: "信息提取强度" }), info.node]),
-        el("div", { class: "field" }, [el("label", { text: "画风参考强度" }), style.node]),
+        el("div", { class: "field" }, [el("label", { text: uiMessage("信息提取强度") }), info.node]),
+        el("div", { class: "field" }, [el("label", { text: uiMessage("画风参考强度") }), style.node]),
       ]),
     ]);
     return { node: item, dz, info, style };
@@ -845,8 +846,8 @@ function buildVibeEditor(container) {
     clear(container);
     items.length = 0;
     const btnRow = el("div", { style: "display:flex;gap:8px;margin-bottom:10px;" }, [
-      el("button", { class: "btn btn-sm", text: "➕ 添加参考图", onclick: () => { if (state.count < max) { state.count++; render(); } else toast("最多 " + max + " 张", "warning"); } }),
-      el("button", { class: "btn btn-sm btn-ghost", text: "➖ 删除", onclick: () => { if (state.count > 0) { state.count--; render(); } } }),
+      el("button", { class: "btn btn-sm", text: uiMessage("➕ 添加参考图"), onclick: () => { if (state.count < max) { state.count++; render(); } else toast("最多 " + max + " 张", "warning"); } }),
+      el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("➖ 删除"), onclick: () => { if (state.count > 0) { state.count--; render(); } } }),
     ]);
     container.append(btnRow);
     for (let i = 0; i < state.count; i++) {
@@ -893,7 +894,7 @@ function buildLeftTabs(saved) {
   tabBtns = {};
   tabBodies = {};
   tabs.forEach((t, i) => {
-    const btn = el("button", { class: "tab-btn" + (i === 0 ? " active" : ""), text: t.title, onclick: () => {
+    const btn = el("button", { class: "tab-btn" + (i === 0 ? " active" : ""), text: uiMessage(t.title), onclick: () => {
       [...bar.children].forEach((b) => b.classList.remove("active"));
       bodies.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
@@ -914,11 +915,11 @@ function buildLeftTabs(saved) {
 
   // 2. 角色分区
   charSection = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["👥 角色分区"]),
+    el("div", { class: "card-title" }, [uiMessage("👥 角色分区")]),
   ]);
   const charWrap = el("div");
   // 位置模式: AI's Choice / Custom (添加足够角色后才显示)
-  aiChoiceRow = el("div", { class: "field" }, [el("label", { text: "🤖 位置模式" })]);
+  aiChoiceRow = el("div", { class: "field" }, [el("label", { text: uiMessage("🤖 位置模式") })]);
   C.aiChoice = segChoice(["AI's Choice", "Custom"], saved.ai_choice ? "AI's Choice" : "Custom", () => updateAiChoiceVisibility());
   aiChoiceRow.append(C.aiChoice.node);
   aiChoiceRow.style.display = "none";
@@ -948,7 +949,7 @@ function buildLeftTabs(saved) {
 
   // 3. 角色参考
   refSection = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["🧑‍🎨 角色参考", el("span", { class: "badge", text: "每张图片消耗 5 点数" })]),
+    el("div", { class: "card-title" }, [uiMessage("🧑‍🎨 角色参考"), el("span", { class: "badge", text: uiMessage("每张图片消耗 5 点数") })]),
   ]);
   const refWrap = el("div");
   refList = roleList(refWrap, {
@@ -976,7 +977,7 @@ function buildLeftTabs(saved) {
 
   // 4. 风格迁移
   vibeBundleRow = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["🎭 风格迁移 (Vibe)"]),
+    el("div", { class: "card-title" }, [uiMessage("🎭 风格迁移 (Vibe)")]),
   ]);
   C.vibeBundle = fileDropZone({
     label: "📦 *.naiv4vibebundle 文件",
@@ -988,7 +989,7 @@ function buildLeftTabs(saved) {
   vibeBundleRow.append(C.vibeBundle.node, C.vibeNormalize.node);
 
   nai3VibeRow = el("div", { class: "card hidden", style: "margin:0;margin-top:10px;" }, [
-    el("div", { class: "card-title" }, ["🎭 风格迁移 (Vibe)"]),
+    el("div", { class: "card-title" }, [uiMessage("🎭 风格迁移 (Vibe)")]),
   ]);
   const vibeWrap = el("div");
   vibeList = buildVibeEditor(vibeWrap);
@@ -1003,7 +1004,7 @@ function buildLeftTabs(saved) {
 
 function buildParamsTab(body, saved) {
   const card = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["🎛️ 参数设置"]),
+    el("div", { class: "card-title" }, [uiMessage("🎛️ 参数设置")]),
   ]);
 
   // 分辨率
@@ -1038,8 +1039,8 @@ function buildParamsTab(body, saved) {
   // 种子
   const seedRow = el("div", { class: "field-row" });
   C.seed = field("🌱 种子", "text", { value: saved.seed ?? "-1" });
-  const lastSeedBtn = el("button", { class: "mini-btn", text: "♻️ 上次" });
-  const randomSeedBtn = el("button", { class: "mini-btn", text: "🎲 随机" });
+  const lastSeedBtn = el("button", { class: "mini-btn", text: uiMessage("♻️ 上次") });
+  const randomSeedBtn = el("button", { class: "mini-btn", text: uiMessage("🎲 随机") });
   lastSeedBtn.addEventListener("click", async () => {
     try {
       const last = await fetchLast();
@@ -1063,7 +1064,7 @@ function buildParamsTab(body, saved) {
   card.append(toggles);
 
   // Enhance
-  enhanceRow = el("div", { style: "margin-top:12px;" }, [el("div", { class: "card-title", text: "✨ Enhance 增强" })]);
+  enhanceRow = el("div", { style: "margin-top:12px;" }, [el("div", { class: "card-title", text: uiMessage("✨ Enhance 增强") })]);
   C.enhance = field("启用 Enhance", "checkbox", { value: saved.enhance?.enabled ?? false });
   // 放大倍数: 1x / 1.5x; Max 仅 v5 系列 (保持纵横比放大到 1536×2048 面积上限)
   const enhanceAmountOpts = enhanceAmounts(C.model.get());
@@ -1071,7 +1072,7 @@ function buildParamsTab(body, saved) {
     options: enhanceAmountOpts,
     value: normalizeEnhanceAmount(saved.enhance?.amount, enhanceAmountOpts),
   });
-  C.enhanceAmount.input.title = "Max 仅 v5 系列模型可选: 保持纵横比放大到 1536×2048 的面积上限 (宽高均为 64 的倍数)";
+  setAttribute(C.enhanceAmount.input, "title", uiMessage("Max 仅 v5 系列模型可选: 保持纵横比放大到 1536×2048 的面积上限 (宽高均为 64 的倍数)"));
   C.magnitude = field("强度", "slider", { min: 1, max: 5, step: 1, value: saved.enhance?.magnitude ?? 1 });
   const enRow = el("div", { class: "field-row" });
   enRow.append(C.enhance.node, C.enhanceAmount.node, C.magnitude.node);
@@ -1087,7 +1088,7 @@ function buildParamsTab(body, saved) {
   toggleEnhance();
 
   // 图生图 / 重绘
-  const inpaintTitle = el("div", { class: "card-title", style: "margin-top:14px;", text: "🎨 图生图 / 局部重绘 / 涂鸦重绘" });
+  const inpaintTitle = el("div", { class: "card-title", style: "margin-top:14px;", text: uiMessage("🎨 图生图 / 局部重绘 / 涂鸦重绘") });
   const editorWrap = el("div");
   editor = imageEditor(editorWrap, {
     onChange: () => updateInpaintVisibility(),
@@ -1125,7 +1126,7 @@ function buildParamsTab(body, saved) {
 function buildRightPanel() {
   // 剩余点数/用量: 下拉徽标 (多 Token 时避免标题行文本过长溢出, 点击展开选择查看的 Token)
   anlasWrapEl = el("div", { class: "anlas-wrap" });
-  anlasBadgeEl = el("button", { class: "badge anlas-badge", id: "anlas-badge", type: "button", title: "剩余点数 / 用量" }, "点数: --");
+  anlasBadgeEl = el("button", { class: "badge anlas-badge", id: "anlas-badge", type: "button", title: uiMessage("剩余点数 / 用量") }, "点数: --");
   anlasMenuEl = el("div", { class: "anlas-menu" });
   anlasMenuEl.hidden = true;
   anlasWrapEl.append(anlasBadgeEl, anlasMenuEl);
@@ -1151,22 +1152,22 @@ function buildRightPanel() {
     class: "btn btn-sm anlas-refresh",
     id: "anlas-refresh",
     type: "button",
-    text: "🔄 刷新",
-    title: "立即重新查询剩余点数 / 用量 (会真实请求 NovelAI)",
+    text: uiMessage("🔄 刷新"),
+    title: uiMessage("立即重新查询剩余点数 / 用量 (会真实请求 NovelAI)"),
   });
   anlasRefreshBtn.addEventListener("click", refreshAnlasNow);
   const card = el("div", { class: "card", style: "min-height:400px;display:flex;flex-direction:column;" }, [
     el("div", { class: "card-title" }, [
-      "🖼️ 输出图片",
+      uiMessage("🖼️ 输出图片"),
       anlasWrapEl,
       anlasRefreshBtn,
     ]),
   ]);
   genGalleryEl = el("div", { class: "gallery", style: "flex:1;" });
   // 两个"发送"按钮放在同一行, 右侧留出"打开保存目录"按钮
-  sendBtn = el("button", { class: "btn btn-sm hidden", text: "📤 发送到图生图" });
-  sendPnginfoBtn = el("button", { class: "btn btn-sm hidden", text: "🔮 发送到法术解析" });
-  openDirBtn = el("button", { class: "btn btn-sm", text: "📁 打开保存目录", title: "在文件管理器中打开图片保存目录" });
+  sendBtn = el("button", { class: "btn btn-sm hidden", text: uiMessage("📤 发送到图生图") });
+  sendPnginfoBtn = el("button", { class: "btn btn-sm hidden", text: uiMessage("🔮 发送到法术解析") });
+  openDirBtn = el("button", { class: "btn btn-sm", text: uiMessage("📁 打开保存目录"), title: uiMessage("在文件管理器中打开图片保存目录") });
   const btnRow = el("div", { class: "output-actions" }, [
     sendBtn,
     sendPnginfoBtn,
@@ -1188,7 +1189,7 @@ async function refreshAnlasNow() {
   if (!btn || btn.disabled) return;
   const label = "🔄 刷新";
   btn.disabled = true;
-  btn.textContent = "⏳ 刷新中…";
+  setText(btn, uiMessage("⏳ 刷新中…"));
   try {
     // 必须打 /api/anlas/refresh: /api/anlas 只回缓存快照, 点多少次都刷不出新值
     const data = await post("/api/anlas/refresh");
@@ -1205,7 +1206,7 @@ async function refreshAnlasNow() {
     toast("刷新剩余点数失败: " + (e?.message || e), "error");
   } finally {
     btn.disabled = false;
-    btn.textContent = label;
+    setText(btn, uiMessage(label));
   }
 }
 
@@ -1251,8 +1252,8 @@ async function updateAnlasBadge() {
     if (!badge) return;
     const list = Array.isArray(data.tokens) ? data.tokens : [];
     if (!list.length) {
-      badge.textContent = "点数: --";
-      badge.title = "未配置 Token, 无法查询剩余点数 / 用量";
+      setText(badge, uiMessage("点数: --"));
+      setAttribute(badge, "title", uiMessage("未配置 Token, 无法查询剩余点数 / 用量"));
       if (anlasMenuEl) anlasMenuEl.replaceChildren();
       anlasMenuSig = "";  // 列表清空: 下次有数据时强制重建
       return;
@@ -1271,10 +1272,8 @@ async function updateAnlasBadge() {
     // 徽标只显示当前选中的 Token (多 Token 时避免文本溢出, 下拉面板内查看全部)
     const cur = list.find((t) => (t.index ?? 0) === anlasSelected) || list[0];
     anlasSelected = cur.index ?? 0;
-    badge.textContent = `${anlasStatusText(cur)} ${anlasEntryText(cur)}`;
-    badge.title = list.length > 1
-      ? "点击选择查看的 Token (启动时查询全部, 生成后只更新本次所用 Token)"
-      : "剩余点数 / 用量 (启动时查询, 生成后只更新本次所用 Token)";
+    setText(badge, uiMessage("{0} {1}", uiMessage(anlasStatusText(cur)), uiMessage(anlasEntryText(cur))));
+    setAttribute(badge, "title", list.length > 1 ? uiMessage("点击选择查看的 Token (启动时查询全部, 生成后只更新本次所用 Token)") : uiMessage("剩余点数 / 用量 (启动时查询, 生成后只更新本次所用 Token)"));
     if (!anlasMenuEl) return;
     // 只有 Token 列表本身变了 (数量/打码后的名字) 才重建 DOM; 其余情况就地更新文本,
     // 避免每次 anlas:update / job:done / 3 秒重试都整段 replaceChildren。
@@ -1292,7 +1291,7 @@ async function updateAnlasBadge() {
           item.dataset.idx = String(t.index ?? 0);
           return item;
         }),
-        el("div", { class: "anlas-note muted", text: "剩余点数及用量 · 恢复时间在查询时更新" }),
+        el("div", { class: "anlas-note muted", text: uiMessage("剩余点数及用量 · 恢复时间在查询时更新") }),
       );
     }
     const rows = anlasMenuEl.querySelectorAll(".anlas-item");
@@ -1305,16 +1304,16 @@ async function updateAnlasBadge() {
       const status = row.querySelector(".anlas-status");
       const title = t.active === true ? "订阅有效" : t.active === false ? "订阅无效/未激活" : "尚未查询";
       const statusText = anlasStatusText(t);
-      if (status.textContent !== statusText) status.textContent = statusText;
-      if (status.title !== title) status.title = title;
+      if (status.textContent !== statusText) setText(status, uiMessage(statusText));
+      if (status.title !== title) setAttribute(status, "title", uiMessage(title));
       const val = Number.isFinite(Number(t.anlas)) && Number(t.anlas) >= 0
         ? `点数: ${Number(t.anlas)} · 用量: ${Number(t.remains)}%`
         : "未查询到";
       const valEl = row.querySelector(".anlas-item-val");
-      if (valEl.textContent !== val) valEl.textContent = val;
+      if (valEl.textContent !== val) setText(valEl, uiMessage(val));
       const rec = anlasRecoverText(t);
       const recEl = row.querySelector(".anlas-item-recover");
-      if (recEl.textContent !== rec) recEl.textContent = rec;
+      if (recEl.textContent !== rec) setText(recEl, uiMessage(rec));
     });
   } catch {}
 }
@@ -1552,15 +1551,12 @@ function updateResHint() {
   // 所以超上限也不算"无法生成" —— 这里只提示一下, 不标红。
   const cropRedraw = !!editor?.isCropActive?.();
   if (over && cropRedraw) {
-    resHintEl.textContent =
-      `像素 ${pixels.toLocaleString()} / 上限 ${MAX_RESOLUTION_PIXELS.toLocaleString()} — 超出 ${MAX_RESOLUTION_LABEL}, 但裁剪重绘按生成块出图, 成图仍是原图尺寸, 可以生成`;
+    setText(resHintEl, uiMessage("像素 {0} / 上限 {1} — 超出 {2}, 但裁剪重绘按生成块出图, 成图仍是原图尺寸, 可以生成", pixels.toLocaleString(), MAX_RESOLUTION_PIXELS.toLocaleString(), MAX_RESOLUTION_LABEL));
     resHintEl.className = "";
     resHintEl.style.color = "var(--text-2)";
     return;
   }
-  resHintEl.textContent = over
-    ? `⚠️ 像素 ${pixels.toLocaleString()} / 上限 ${MAX_RESOLUTION_PIXELS.toLocaleString()} — 超出 ${MAX_RESOLUTION_LABEL}, 无法生成`
-    : `像素 ${pixels.toLocaleString()} / 上限 ${MAX_RESOLUTION_PIXELS.toLocaleString()} (${MAX_RESOLUTION_LABEL})`;
+  setText(resHintEl, over ? uiMessage("⚠️ 像素 {0} / 上限 {1} — 超出 {2}, 无法生成", pixels.toLocaleString(), MAX_RESOLUTION_PIXELS.toLocaleString(), MAX_RESOLUTION_LABEL) : uiMessage("像素 {0} / 上限 {1} ({2})", pixels.toLocaleString(), MAX_RESOLUTION_PIXELS.toLocaleString(), MAX_RESOLUTION_LABEL));
   resHintEl.className = "";
   resHintEl.style.color = over ? "var(--danger)" : "var(--text-2)";
 }
@@ -1718,7 +1714,7 @@ async function onGenerate() {
   const gateH = Number(C.height.get()) || 1216;
   const resError = cropRedraw ? null : validateResolution(gateW, gateH);
   if (resError) {
-    infoEl.textContent = "❌ " + resError;
+    setText(infoEl, uiMessage("❌ " + resError));
     toast(resError, "error", 7000);
     C.width.input?.focus?.();
     return;
@@ -1726,7 +1722,7 @@ async function onGenerate() {
   // 编辑器侧校验 (如裁剪重绘还没框选): 也放在导出/上传之前, 不走一遍重活
   const editorError = editor?.validate?.();
   if (editorError) {
-    infoEl.textContent = "❌ " + editorError;
+    setText(infoEl, uiMessage("❌ " + editorError));
     toast(editorError, "error", 6000);
     return;
   }
@@ -1738,17 +1734,17 @@ async function onGenerate() {
     return;
   }
   C.generateBtn.disabled = true;
-  infoEl.textContent = "🚀 正在提交生成任务...";
+  setText(infoEl, uiMessage("🚀 正在提交生成任务..."));
   try {
     const res = await post("/api/generate", request);
     if (res.position && res.position > 1) {
-      infoEl.textContent = "🚦 已加入生图队列, 当前第 " + res.position + " 位, 等待前面的任务完成...";
+      setText(infoEl, uiMessage("🚦 已加入生图队列, 当前第 {0} 位, 等待前面的任务完成...", res.position));
       toast(`已加入生图队列 (第 ${res.position} 位): ${res.job_id}`, "info", 5000);
     } else {
       toast(`生成任务已启动: ${res.job_id}`, "success");
     }
   } catch (e) {
-    infoEl.textContent = "❌ " + e.message;
+    setText(infoEl, uiMessage("❌ " + e.message));
     toast(e.message, "error", 6000);
   } finally {
     C.generateBtn.disabled = false;
@@ -1779,7 +1775,7 @@ function onJobDone(ev) {
     buildOutputViewer(genGalleryEl, ev.images);  // 内部已选中第一张并显示发送按钮
   }
   if (ev.message) {
-    infoEl.textContent = "✅ " + ev.message;
+    setText(infoEl, uiMessage("✅ " + ev.message));
     toast(ev.message, "success");
   }
   updateAnlasBadge();
@@ -1797,7 +1793,7 @@ function onJobFailed(ev) {
   if (ev.name !== "图片生成") return;
   lastResolvedPositive = null; // 生成失败: 不回写输入框, 让用户保留原始输入继续修改
   C.generateBtn.disabled = false;
-  infoEl.textContent = "❌ " + (ev.error || "生成失败");
+  setText(infoEl, uiMessage("❌ {0}", uiMessage(ev.error || "生成失败")));
 }
 
 // ---------------- 对外接口 ----------------

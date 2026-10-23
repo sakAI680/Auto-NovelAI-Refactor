@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, textNode } from "../i18n.js";
 // ============================================================
 // 配置设置视图
 // ============================================================
@@ -15,7 +16,7 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["⚙️ 配置设置", el("span", { class: "sub", text: "修改后立即生效, 无需重启 · 界面主题请使用右上角按钮切换" })]),
+    el("h2", {}, [uiMessage("⚙️ 配置设置"), el("span", { class: "sub", text: uiMessage("修改后立即生效, 无需重启 · 界面主题请使用右上角按钮切换") })]),
   );
 
   const settings = S.app.settings;
@@ -54,10 +55,10 @@ export async function render(container, ctx) {
           shareLinkText.textContent = st.url;
           shareLinkText.href = st.url;
         } else if (st.error) {
-          shareLinkText.textContent = "❌ " + st.error;
+          setText(shareLinkText, uiMessage("❌ " + st.error));
           shareLinkText.removeAttribute("href");
         } else if (!st.running) {
-          shareLinkText.textContent = "隧道未运行, 请重新保存开启";
+          setText(shareLinkText, uiMessage("隧道未运行, 请重新保存开启"));
           shareLinkText.removeAttribute("href");
         }
       } catch { /* 后端不可用时保持原文案 */ }
@@ -72,11 +73,11 @@ export async function render(container, ctx) {
         shareLinkText.textContent = st.url;
         shareLinkText.href = st.url;
       } else if (st.running) {
-        shareLinkText.textContent = "⏳ 正在建立隧道, 请稍候 (首次使用需下载隧道程序)...";
+        setText(shareLinkText, uiMessage("⏳ 正在建立隧道, 请稍候 (首次使用需下载隧道程序)..."));
         shareLinkText.removeAttribute("href");
         startSharePolling();
       } else {
-        shareLinkText.textContent = "保存开启后自动生成外网访问链接";
+        setText(shareLinkText, uiMessage("保存开启后自动生成外网访问链接"));
         shareLinkText.removeAttribute("href");
       }
     } catch { /* 后端不可用时保持原文案 */ }
@@ -85,7 +86,7 @@ export async function render(container, ctx) {
   function tf(label, key, type = "text", hint = "") {
     const input = el("input", { type, value: settings[key] ?? "" });
     const f = el("div", { class: "field" }, [
-      el("label", {}, [document.createTextNode(label), hint ? el("span", { class: "hint", text: hint }) : null]),
+      el("label", {}, [textNode(uiMessage(label)), hint ? el("span", { class: "hint", text: uiMessage(hint) }) : null]),
       input,
     ]);
     fields[key] = input;
@@ -97,8 +98,8 @@ export async function render(container, ctx) {
     const input = el("input", { type: "checkbox" });
     input.checked = !!settings[key];
     const f = el("div", { class: "field" }, [
-      el("label", { class: "checkline" }, [input, document.createTextNode(label)]),
-      hint ? el("div", { class: "muted", text: hint }) : null,
+      el("label", { class: "checkline" }, [input, textNode(uiMessage(label))]),
+      hint ? el("div", { class: "muted", text: uiMessage(hint) }) : null,
     ]);
     fields[key] = input;
     otherFields.push(f);
@@ -108,9 +109,9 @@ export async function render(container, ctx) {
   function sf(label, key, min, max, step, hint = "") {
     const s = sliderRow({ min, max, step, value: settings[key] ?? min });
     const f = el("div", { class: "field" }, [
-      el("label", { text: label }),
+      el("label", { text: uiMessage(label) }),
       s.node,
-      hint ? el("div", { class: "muted", text: hint }) : null,
+      hint ? el("div", { class: "muted", text: uiMessage(hint) }) : null,
     ]);
     otherFields.push(f);
     grid.append(f);
@@ -120,12 +121,12 @@ export async function render(container, ctx) {
   // 多 Token: 每行一个, 数量 = 并行生图通道数 (旧的单 token 字段自动兼容)
   {
     const tokensValue = (settings.tokens && settings.tokens.length ? settings.tokens : (settings.token ? [settings.token] : [])).join("\n");
-    const area = el("textarea", { rows: 3, placeholder: "pst-xxxx... (每行一个 Token)", spellcheck: "false" });
+    const area = el("textarea", { rows: 3, placeholder: uiMessage("pst-xxxx... (每行一个 Token)"), spellcheck: "false" });
     area.value = tokensValue;
     const f = el("div", { class: "field" }, [
-      el("label", {}, [document.createTextNode("🔑 Token (每行一个)"), el("span", { class: "hint", text: "多 Token 可并行生成" })]),
+      el("label", {}, [textNode(uiMessage("🔑 Token (每行一个)")), el("span", { class: "hint", text: uiMessage("多 Token 可并行生成") })]),
       area,
-      el("div", { class: "muted", text: "Token 数量 = 同时执行的生图任务数; 修改保存后立即生效 (正在执行的任务不受影响)" }),
+      el("div", { class: "muted", text: uiMessage("Token 数量 = 同时执行的生图任务数; 修改保存后立即生效 (正在执行的任务不受影响)") }),
     ]);
     fields.tokens = { get: () => area.value.split("\n").map((s) => s.trim()).filter(Boolean) };
     otherFields.push(f);
@@ -150,8 +151,8 @@ export async function render(container, ctx) {
     const box = el("input", { type: "checkbox" });
     box.checked = !!settings.share;
     shareLinkBox = el("div", { class: "field share-link-field" }, [
-      el("div", { class: "muted" }, ["🌐 外网链接: ", (shareLinkText = el("a", { class: "share-link", text: settings.share_url || "保存开启后自动生成外网访问链接" }))]),
-      el("div", { class: "muted", text: "他人通过此链接即可访问本 WebUI 并使用已配置的 Token 生成图片, 请勿泄露; 关闭共享后链接立即失效; 远程访问时日志为 2 秒轮询刷新" }),
+      el("div", { class: "muted" }, [uiMessage("🌐 外网链接: "), (shareLinkText = el("a", { class: "share-link", text: uiMessage(settings.share_url || "保存开启后自动生成外网访问链接") }))]),
+      el("div", { class: "muted", text: uiMessage("他人通过此链接即可访问本 WebUI 并使用已配置的 Token 生成图片, 请勿泄露; 关闭共享后链接立即失效; 远程访问时日志为 2 秒轮询刷新") }),
     ]);
     shareLinkText.addEventListener("click", (e) => {
       if (!shareLinkText.getAttribute("href")) e.preventDefault();
@@ -161,8 +162,8 @@ export async function render(container, ctx) {
     });
     fields.share = { get: () => box.checked };
     const shareField = el("div", { class: "field" }, [
-      el("label", { class: "checkline" }, [box, document.createTextNode("🌍 共享链接")]),
-      el("div", { class: "muted", text: "通过公网隧道生成一条外网可访问的链接; 保存开启后隐藏本页其它全部配置" }),
+      el("label", { class: "checkline" }, [box, textNode(uiMessage("🌍 共享链接"))]),
+      el("div", { class: "muted", text: uiMessage("通过公网隧道生成一条外网可访问的链接; 保存开启后隐藏本页其它全部配置") }),
       shareLinkBox,
     ]);
     grid.append(shareField);
@@ -178,11 +179,11 @@ export async function render(container, ctx) {
 
   // 操作按钮 (卡片右上角)
   const actions = el("div", { class: "settings-actions" });
-  const saveBtn = el("button", { class: "btn btn-primary btn-sm", text: "💾 保存" });
-  const restartBtn = el("button", { class: "btn btn-sm", text: "🔄 重启" });
-  const updateBtn = el("button", { class: "btn btn-sm", text: "⬆️ 更新" });
+  const saveBtn = el("button", { class: "btn btn-primary btn-sm", text: uiMessage("💾 保存") });
+  const restartBtn = el("button", { class: "btn btn-sm", text: uiMessage("🔄 重启") });
+  const updateBtn = el("button", { class: "btn btn-sm", text: uiMessage("⬆️ 更新") });
   actions.append(saveBtn, restartBtn, updateBtn);
-  card.append(el("div", { class: "card-title", text: "⚙️ 基本配置" }), actions, grid);
+  card.append(el("div", { class: "card-title", text: uiMessage("⚙️ 基本配置") }), actions, grid);
   container.append(card);
 
 
@@ -218,7 +219,7 @@ export async function render(container, ctx) {
         applyShareUI(fields.share.get());
         if (fields.share.get()) {
           toast("🌍 共享链接开启中, 正在生成外网链接, 生成后自动跳转...", "info", 8000);
-          shareLinkText.textContent = "⏳ 正在建立隧道, 请稍候 (首次使用需下载隧道程序)...";
+          setText(shareLinkText, uiMessage("⏳ 正在建立隧道, 请稍候 (首次使用需下载隧道程序)..."));
           shareLinkText.removeAttribute("href");
           let n = 0;
           // 用共享变量持有: onViewLeave 里要能停掉它 (原先只在自己回调内部 clearInterval,

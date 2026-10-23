@@ -1,3 +1,4 @@
+import { m as uiMessage, textNode } from "../i18n.js";
 // ============================================================
 // 动态角色 / 参考图列表
 // ============================================================
@@ -35,17 +36,17 @@ export function roleList(container, {
       case "checkbox": {
         const input = el("input", { type: "checkbox" });
         input.checked = !!f.default;
-        const label = el("label", { class: "checkline" }, [input, document.createTextNode(f.label)]);
+        const label = el("label", { class: "checkline" }, [input, textNode(uiMessage(f.label))]);
         return { node: label, get: () => input.checked, set: (v) => { input.checked = !!v; } };
       }
       case "select": {
-        const select = el("select", {}, (f.options || []).map((o) => el("option", { value: o, text: o })));
+        const select = el("select", {}, (f.options || []).map((o) => el("option", { value: o, text: uiMessage(o) })));
         select.value = f.default ?? f.options?.[0] ?? "";
-        return { node: el("div", { class: "field" }, [el("label", { text: f.label }), select]), get: () => select.value, set: (v) => { select.value = v; } };
+        return { node: el("div", { class: "field" }, [el("label", { text: uiMessage(f.label) }), select]), get: () => select.value, set: (v) => { select.value = v; } };
       }
       case "slider": {
         const s = sliderRow({ min: f.min ?? 0, max: f.max ?? 1, step: f.step ?? 0.05, value: f.default ?? 0 });
-        return { node: el("div", { class: "field" }, [el("label", { text: f.label }), s.node]), get: () => s.get(), set: (v) => s.set(v) };
+        return { node: el("div", { class: "field" }, [el("label", { text: uiMessage(f.label) }), s.node]), get: () => s.get(), set: (v) => s.set(v) };
       }
       case "image": {
         // 图片输入区域: 单击选择 / 拖拽放入
@@ -63,7 +64,7 @@ export function roleList(container, {
         box.append(input);
         wireAutocomplete(input, box);
         // 提示词输入框: 标签行右侧放 Wildcards 图标按钮 (空间小, 只显示图标)
-        const label = el("label", { text: f.label });
+        const label = el("label", { text: uiMessage(f.label) });
         if (f.type === "textarea" || f.wildcards) {
           label.append(wildcardsButton(input, { title: f.label || "提示词" }));
         }
@@ -76,7 +77,7 @@ export function roleList(container, {
     const idx = items.length;
     const card = el("div", { class: "role-card", "data-idx": idx });
     const head = el("div", { class: "role-head" }, [
-      el("span", { class: "role-num", text: `${title} #${idx + 1}` }),
+      el("span", { class: "role-num", text: uiMessage("{0} #{1}", uiMessage(title), idx + 1) }),
     ]);
     const body = el("div", { class: "grid grid-2" });
     const controls = {};
@@ -84,7 +85,7 @@ export function roleList(container, {
     if (headCheckbox) {
       const input = el("input", { type: "checkbox" });
       input.checked = !!headCheckbox.default;
-      const cb = el("label", { class: "checkline" }, [input, document.createTextNode(headCheckbox.label || "启用")]);
+      const cb = el("label", { class: "checkline" }, [input, textNode(uiMessage(headCheckbox.label || "启用"))]);
       head.append(cb);
       controls[headCheckbox.id] = { node: cb, get: () => input.checked, set: (v) => { input.checked = !!v; } };
     }
@@ -145,8 +146,8 @@ export function roleList(container, {
   const btnRow = el("div", { style: "display:flex;gap:8px;margin-bottom:10px;" });
   const notify = () => { if (onChange) onChange(state.count); };
   btnRow.append(
-    el("button", { class: "btn btn-sm", text: "➕ 添加", onclick: () => { if (state.count < state.max) { state.count++; render(); notify(); } else toast(maxCountMsg || ("最多 " + state.max + " 个"), "warning"); } }),
-    el("button", { class: "btn btn-sm btn-ghost", text: "➖ 删除", onclick: () => { if (state.count > min) { state.count--; render(); notify(); } } }),
+    el("button", { class: "btn btn-sm", text: uiMessage("➕ 添加"), onclick: () => { if (state.count < state.max) { state.count++; render(); notify(); } else toast(maxCountMsg || ("最多 " + state.max + " 个"), "warning"); } }),
+    el("button", { class: "btn btn-sm btn-ghost", text: uiMessage("➖ 删除"), onclick: () => { if (state.count > min) { state.count--; render(); notify(); } } }),
   );
 
   let mounted = false;

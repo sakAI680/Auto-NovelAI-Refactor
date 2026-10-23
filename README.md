@@ -1,3 +1,5 @@
+[日本語 UI の説明](README.ja.md) · 右上で日本語 / 简体中文を切り替えられます。
+
 <p align="center">
   <img src="https://socialify.git.ci/zhulinyv/Auto-NovelAI-Refactor/image?custom_description=%E4%B8%80%E6%9E%9A%E6%9B%B4%E5%8F%AF%E7%88%B1%E7%9A%84+NovelAI+%E7%94%9F%E6%88%90%E5%B7%A5%E5%85%B7&custom_language=Python&description=1&font=Inter&forks=1&issues=1&language=1&logo=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F66541860%3Fv%3D4&name=1&owner=1&pattern=Transparent&pulls=1&stargazers=1&theme=Auto" alt="Auto-NovelAI-Refactor" width="640" height="320" />
 </p>

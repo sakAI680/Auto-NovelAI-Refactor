@@ -1,3 +1,4 @@
+import { m as uiMessage } from "../i18n.js";
 // ============================================================
 // 支持鸣谢视图 (侧边栏独立页面):
 //   PPT 式翻页: 当前区域仅显示一页, 底部按钮上/下翻页, 翻页后另一页不显示
@@ -8,23 +9,23 @@ import { el, clear } from "../ui.js";
 export async function render(container, ctx) {
   clear(container);
   container.append(
-    el("h2", {}, ["🙏 支持鸣谢", el("span", { class: "sub", text: "鸣谢项目使用到的开源项目 · 加好友交流 · 请作者喝杯奶茶" })]),
+    el("h2", {}, [uiMessage("🙏 支持鸣谢"), el("span", { class: "sub", text: uiMessage("鸣谢项目使用到的开源项目 · 加好友交流 · 请作者喝杯奶茶") })]),
   );
 
   function sponsorItem(src, label, href) {
     const item = el("div", { class: "sponsor-item" }, [
-      el("div", { class: "sponsor-qr" }, [el("img", { src, alt: label, loading: "lazy" })]),
-      el("div", { class: "sponsor-label", text: label }),
+      el("div", { class: "sponsor-qr" }, [el("img", { src, alt: uiMessage(label), loading: "lazy" })]),
+      el("div", { class: "sponsor-label", text: uiMessage(label) }),
     ]);
     if (href) {
-      const link = el("a", { class: "sponsor-qr-link", href, target: "_blank", rel: "noopener", title: "点击打开加好友链接" }, [item]);
+      const link = el("a", { class: "sponsor-qr-link", href, target: "_blank", rel: "noopener", title: uiMessage("点击打开加好友链接") }, [item]);
       return link;
     }
     return item;
   }
   const sponsorCard = el("div", { class: "card pager-card" }, [
-    el("div", { class: "card-title", text: "💰 赞助一下" }),
-    el("p", { class: "muted", style: "margin:4px 0 14px;line-height:1.8;", text: "如果这个项目对你有帮助, 欢迎请作者喝杯奶茶 ~ 扫码时请备注昵称, 非常感谢每一份支持 💕" }),
+    el("div", { class: "card-title", text: uiMessage("💰 赞助一下") }),
+    el("p", { class: "muted", style: "margin:4px 0 14px;line-height:1.8;", text: uiMessage("如果这个项目对你有帮助, 欢迎请作者喝杯奶茶 ~ 扫码时请备注昵称, 非常感谢每一份支持 💕") }),
     el("div", { class: "sponsor-grid" }, [
       sponsorItem("assets/sponsor/wechat.png", "💚 微信收款"),
       sponsorItem("assets/sponsor/alipay.png", "💙 支付宝收款"),
@@ -34,11 +35,11 @@ export async function render(container, ctx) {
 
   // 加好友页: 个人 QQ 二维码 + 加好友链接
   const joinCard = el("div", { class: "card pager-card" }, [
-    el("div", { class: "card-title", text: "👥 加好友交流" }),
-    el("p", { class: "muted", style: "margin:4px 0 14px;line-height:1.8;", text: "有问题或建议欢迎添加我的 QQ 好友: 1797213784 ~ 一起玩转 AI 绘图, 交流使用心得、反馈问题与建议, 点击下方二维码或按钮即可添加 💬" }),
+    el("div", { class: "card-title", text: uiMessage("👥 加好友交流") }),
+    el("p", { class: "muted", style: "margin:4px 0 14px;line-height:1.8;", text: uiMessage("有问题或建议欢迎添加我的 QQ 好友: 1797213784 ~ 一起玩转 AI 绘图, 交流使用心得、反馈问题与建议, 点击下方二维码或按钮即可添加 💬") }),
     el("div", { class: "join-grid" }, [
       sponsorItem("assets/sponsor/qq_friend.png", "📱 扫码添加 QQ 好友 1797213784", "https://qm.qq.com/q/Rrsh8avXc6"),
-      el("a", { class: "btn btn-primary join-btn", href: "https://qm.qq.com/q/Rrsh8avXc6", target: "_blank", rel: "noopener" }, ["🚀 一键加好友"]),
+      el("a", { class: "btn btn-primary join-btn", href: "https://qm.qq.com/q/Rrsh8avXc6", target: "_blank", rel: "noopener" }, [uiMessage("🚀 一键加好友")]),
     ]),
   ]);
 
@@ -61,18 +62,18 @@ export async function render(container, ctx) {
   const ackCardItem = ([name, desc, url]) =>
     el("a", { class: "ack-item", href: url, target: "_blank", rel: "noopener" }, [
       el("div", { class: "ack-name", text: name }),
-      el("div", { class: "ack-desc", text: desc }),
+      el("div", { class: "ack-desc", text: uiMessage(desc) }),
     ]);
   const ackCard = el("div", { class: "card pager-card" }, [
-    el("div", { class: "card-title", text: "🙏 鸣谢" }),
-    el("p", { class: "muted", style: "margin:4px 0 10px;line-height:1.8;", text: "本项目站立在众多优秀开源项目与在线服务的肩膀之上, 向以下项目的作者与贡献者致以诚挚的感谢!" }),
+    el("div", { class: "card-title", text: uiMessage("🙏 鸣谢") }),
+    el("p", { class: "muted", style: "margin:4px 0 10px;line-height:1.8;", text: uiMessage("本项目站立在众多优秀开源项目与在线服务的肩膀之上, 向以下项目的作者与贡献者致以诚挚的感谢!") }),
     el("div", { class: "ack-body" }, [
       el("div", { class: "ack-group" }, [
-        el("div", { class: "ack-title", text: "开源项目" }),
+        el("div", { class: "ack-title", text: uiMessage("开源项目") }),
         el("div", { class: "ack-grid" }, ackProjects.map(ackCardItem)),
       ]),
       el("div", { class: "ack-group" }, [
-        el("div", { class: "ack-title", text: "在线服务与数据来源" }),
+        el("div", { class: "ack-title", text: uiMessage("在线服务与数据来源") }),
         el("div", { class: "ack-grid" }, ackServices.map(ackCardItem)),
       ]),
     ]),
@@ -85,8 +86,8 @@ export async function render(container, ctx) {
   const pageSponsor = el("div", { class: "pager-page" }, [sponsorCard]);
   pagerViewport.append(pageAck, pageJoin, pageSponsor);
 
-  const prevBtn = el("button", { class: "btn btn-sm", type: "button", text: "▲ 上一页", disabled: true });
-  const nextBtn = el("button", { class: "btn btn-sm", type: "button", text: "▼ 下一页" });
+  const prevBtn = el("button", { class: "btn btn-sm", type: "button", text: uiMessage("▲ 上一页"), disabled: true });
+  const nextBtn = el("button", { class: "btn btn-sm", type: "button", text: uiMessage("▼ 下一页") });
   const dots = [el("span", { class: "pager-dot active" }), el("span", { class: "pager-dot" }), el("span", { class: "pager-dot" })];
   const indicator = el("span", { class: "pager-indicator", text: "1 / 3" });
   const nav = el("div", { class: "pager-nav" }, [prevBtn, ...dots, indicator, nextBtn]);

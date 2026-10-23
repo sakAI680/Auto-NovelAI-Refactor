@@ -1,3 +1,4 @@
+import { m as uiMessage, setText } from "../i18n.js";
 // ============================================================
 // 角色区域选择器: 共享一块与分辨率同比例的区域
 // ============================================================
@@ -39,7 +40,7 @@ export function characterRegionPicker({
   const freeView = el("div", { class: "pos-picker-free" });
   const info = el("div", { class: "pos-picker-info" });
   const node = el("div", { class: "field" }, [
-    el("label", { text: "📍 角色位置" }),
+    el("label", { text: uiMessage("📍 角色位置") }),
     box,
     info,
   ]);
@@ -58,7 +59,7 @@ export function characterRegionPicker({
       const labelText = String.fromCharCode(65 + c) + (r + 1);
       const badgeHolder = el("div", { class: "pos-cell-badges" });
       const cell = el("div", { class: "pos-picker-cell", title: labelText }, [
-        el("span", { class: "pos-cell-label", text: labelText }),
+        el("span", { class: "pos-cell-label", text: uiMessage(labelText) }),
         badgeHolder,
       ]);
       cell.addEventListener("click", (e) => {
@@ -167,7 +168,7 @@ export function characterRegionPicker({
         const b = el("div", {
           class: "pos-badge" + (selected === i ? " sel" : ""),
           text: String(i + 1),
-          title: "角色 " + (i + 1),
+          title: uiMessage("角色 {0}", i + 1),
         });
         b.style.background = POS_DOT_COLORS[i % POS_DOT_COLORS.length];
         b.addEventListener("click", (e) => { e.stopPropagation(); selected = i; render(); });
@@ -187,15 +188,11 @@ export function characterRegionPicker({
     freeView.style.display = mode === "free" ? "" : "none";
     // 提示文案
     if (count === 0) {
-      info.textContent = "⬇️ 先在下方添加角色, 再回到这里设置位置";
+      setText(info, uiMessage("⬇️ 先在下方添加角色, 再回到这里设置位置"));
     } else if (mode === "grid") {
-      info.textContent = selected >= 0
-        ? "📍 正在放置 角色 #" + (selected + 1) + " — 点击网格小格 (A1-E5) 确定位置"
-        : "👆 点击左侧角色卡片选中后, 再点击网格小格 (A1-E5) 确定位置";
+      setText(info, selected >= 0 ? uiMessage("📍 正在放置 角色 #{0} — 点击网格小格 (A1-E5) 确定位置", selected + 1) : uiMessage("👆 点击左侧角色卡片选中后, 再点击网格小格 (A1-E5) 确定位置"));
     } else {
-      info.textContent = selected >= 0
-        ? "📍 角色 #" + (selected + 1) + " 已选中 — 拖动圆形图标自由定位"
-        : "🖐 点击/拖动圆形图标自由定位角色";
+      setText(info, selected >= 0 ? uiMessage("📍 角色 #{0} 已选中 — 拖动圆形图标自由定位", selected + 1) : uiMessage("🖐 点击/拖动圆形图标自由定位角色"));
     }
   }
 

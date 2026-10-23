@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, setAttribute } from "./i18n.js";
 // ============================================================
 // 自定义背景: 单张图片 / 文件夹轮播 (跨端口/浏览器持久化)
 //   状态保存在后端 outputs/bg_state.json, 首次启动时自动从 localStorage 迁移
@@ -215,7 +216,7 @@ function updatePidBadge() {
   }
   pidBadge.textContent = "PID " + art.pid;
   const info = [art.title, art.author].filter(Boolean).join(" · ");
-  pidBadge.title = (info ? info + "\n" : "") + "点击查看 Pixiv 作品页";
+  setAttribute(pidBadge, "title", uiMessage((info ? info + "\n" : "") + "点击查看 Pixiv 作品页"));
   pidBadge.classList.remove("hidden");
 }
 
@@ -254,13 +255,13 @@ function getPopover() {
   if (popoverEl) return popoverEl;
   const pop = el("div", { class: "bg-popover hidden", id: "bg-popover" });
 
-  const title = el("div", { class: "bg-title", text: "🖼️ 自定义背景" });
+  const title = el("div", { class: "bg-title", text: uiMessage("🖼️ 自定义背景") });
   pop.append(title);
 
   // ---- 选项卡: 图片 / 在线 / 文件夹 (三种背景方式互斥; 打开时默认停在当前生效方式所在页) ----
-  const tabImg = el("button", { class: "bg-tab", type: "button", text: "🖼️ 图片" });
-  const tabApi = el("button", { class: "bg-tab", type: "button", text: "🌐 在线" });
-  const tabFolder = el("button", { class: "bg-tab", type: "button", text: "📁 文件夹" });
+  const tabImg = el("button", { class: "bg-tab", type: "button", text: uiMessage("🖼️ 图片") });
+  const tabApi = el("button", { class: "bg-tab", type: "button", text: uiMessage("🌐 在线") });
+  const tabFolder = el("button", { class: "bg-tab", type: "button", text: uiMessage("📁 文件夹") });
   const tabBar = el("div", { class: "bg-tabs" }, [tabImg, tabApi, tabFolder]);
   const panelImg = el("div", { class: "bg-panel" });
   const panelApi = el("div", { class: "bg-panel hidden" });
@@ -292,11 +293,11 @@ function getPopover() {
   tabFolder.addEventListener("click", () => activateTab("folder"));
 
   // ---- 单张图片 ----
-  const singleBox = el("div", { class: "field" }, [el("label", { text: "🖼️ 单张图片 (拖入即替换)" })]);
-  const singleName = el("span", { class: "file-chip", text: "未设置" });
-  const singleBtn = el("button", { class: "btn btn-sm btn-file", text: "选择图片" });
+  const singleBox = el("div", { class: "field" }, [el("label", { text: uiMessage("🖼️ 单张图片 (拖入即替换)") })]);
+  const singleName = el("span", { class: "file-chip", text: uiMessage("未设置") });
+  const singleBtn = el("button", { class: "btn btn-sm btn-file", text: uiMessage("选择图片") });
   const singleClear = el("button", { class: "btn btn-sm btn-clear-file", text: "✖" });
-  singleClear.title = "清除单张背景";
+  setAttribute(singleClear, "title", uiMessage("清除单张背景"));
   const singleFile = el("input", { type: "file", accept: "image/*", style: "display:none;" });
   async function singleUpload(list) {
     if (!list || !list.length) return;
@@ -369,10 +370,10 @@ function getPopover() {
   }
 
   // ---- 在线: 两个来源选项 (Bing 每日精选 / Lolicon 动漫), 后端代理下载 ----
-  const apiBox = el("div", { class: "field" }, [el("label", { text: "🌐 图片来源" })]);
+  const apiBox = el("div", { class: "field" }, [el("label", { text: uiMessage("🌐 图片来源") })]);
   const srcGroup = el("div", { class: "opt-group bg-api-src" }, [
-    el("label", { class: "opt-item" + (bgState.apiSource !== "acg" ? " selected" : ""), text: "Bing 每日精选", "data-src": "bing" }),
-    el("label", { class: "opt-item" + (bgState.apiSource === "acg" ? " selected" : ""), text: "Lolicon 动漫", "data-src": "acg" }),
+    el("label", { class: "opt-item" + (bgState.apiSource !== "acg" ? " selected" : ""), text: uiMessage("Bing 每日精选"), "data-src": "bing" }),
+    el("label", { class: "opt-item" + (bgState.apiSource === "acg" ? " selected" : ""), text: uiMessage("Lolicon 动漫"), "data-src": "acg" }),
   ]);
   srcGroup.addEventListener("click", (e) => {
     const item = e.target instanceof Element ? e.target.closest(".opt-item") : null;
@@ -383,12 +384,12 @@ function getPopover() {
     toast(`壁纸来源已切换: ${item.textContent} 🖼️`, "info");
     fetchApiWallpaper();   // 切换后立即换一张新来源的壁纸
   });
-  const apiBtn = el("button", { class: "btn btn-sm", style: "width:100%;", type: "button", text: "🎲 立即随机换一张" });
+  const apiBtn = el("button", { class: "btn btn-sm", style: "width:100%;", type: "button", text: uiMessage("🎲 立即随机换一张") });
   // 点击 "立即随机换一张" 即开启自动轮换 (按下方切换间隔, 无需再手动操作)
   apiBtn.addEventListener("click", async () => {
     apiBtn.disabled = true;
     const oldText = apiBtn.textContent;
-    apiBtn.textContent = "⏳ 正在获取壁纸...";
+    setText(apiBtn, uiMessage("⏳ 正在获取壁纸..."));
     bgState.api = true;
     bgState.folder = null;
     rotationList = [];
@@ -406,8 +407,8 @@ function getPopover() {
   panelApi.append(apiBox);
 
   // ---- 文件夹轮播: 选择后立即展示一张, 之后按间隔自动切换 ----
-  const folderBox = el("div", { class: "field" }, [el("label", { text: "📁 文件夹轮播 (选择后立即生效)" })]);
-  const folderPick = el("button", { class: "btn btn-sm", style: "width:100%;", type: "button", text: "📁 选择文件夹" });
+  const folderBox = el("div", { class: "field" }, [el("label", { text: uiMessage("📁 文件夹轮播 (选择后立即生效)") })]);
+  const folderPick = el("button", { class: "btn btn-sm", style: "width:100%;", type: "button", text: uiMessage("📁 选择文件夹") });
   const folderInfo = el("div", { class: "muted bg-folder-info" });
   folderPick.addEventListener("click", async () => {
     try {
@@ -424,7 +425,7 @@ function getPopover() {
       toast(`已载入 ${res.files.length} 张图片, 立即生效并按间隔轮播 🎠`, "success");
     } catch (e) { toast("选择文件夹失败: " + e.message, "error"); }
   });
-  const folderShuffleBtn = el("button", { class: "btn btn-sm", type: "button", text: "🎲 立即随机换一张" });
+  const folderShuffleBtn = el("button", { class: "btn btn-sm", type: "button", text: uiMessage("🎲 立即随机换一张") });
   folderShuffleBtn.style.marginTop = "8px";
   folderShuffleBtn.addEventListener("click", () => {
     const list = rotationList.length ? rotationList : (bgState.folder || []);
@@ -440,7 +441,7 @@ function getPopover() {
   panelFolder.append(folderBox);
 
   // ---- 切换间隔 ----
-  const intBox = el("div", { class: "field" }, [el("label", { text: "⏱️ 切换间隔 (秒)" })]);
+  const intBox = el("div", { class: "field" }, [el("label", { text: uiMessage("⏱️ 切换间隔 (秒)") })]);
   const intervalInput = el("input", { type: "number", min: 10, max: 3600, step: 1, value: savedInterval() });
   intervalInput.addEventListener("change", () => {
     let v = parseInt(intervalInput.value, 10);
@@ -456,7 +457,7 @@ function getPopover() {
   pop.append(intBox);
 
   // ---- 操作 ----
-  const resetBtn = el("button", { class: "btn btn-sm btn-danger", text: "🗑️ 恢复默认背景" });
+  const resetBtn = el("button", { class: "btn btn-sm btn-danger", text: uiMessage("🗑️ 恢复默认背景") });
   resetBtn.addEventListener("click", async () => {
     bgState.single = null;
     bgState.folder = null;
@@ -489,18 +490,14 @@ function refreshPopoverState(pop) {
   const apiInfo = pop.querySelector(".bg-api-info");
   const srcName = bgState.apiSource === "acg" ? "Lolicon 动漫" : "Bing 每日精选";
   if (singleName) {
-    singleName.textContent = bgState.single ? bgState.single.split("/").pop() : "未设置";
+    setText(singleName, bgState.single ? bgState.single.split("/").pop() : uiMessage("未设置"));
     singleName.title = bgState.single || "";
   }
   if (apiInfo) {
-    apiInfo.textContent = bgState.api
-      ? `自动轮换中: ${srcName}, 每 ${savedInterval()} 秒换一张 🎠`
-      : `未开启 · 当前来源: ${srcName}, 点上方按钮立即换一张并开始自动轮换`;
+    setText(apiInfo, bgState.api ? uiMessage("自动轮换中: {0}, 每 {1} 秒换一张 🎠", srcName, savedInterval()) : uiMessage("未开启 · 当前来源: {0}, 点上方按钮立即换一张并开始自动轮换", srcName));
   }
   if (folderInfo) {
-    folderInfo.textContent = (bgState.folder && bgState.folder.length)
-      ? `轮播中: ${bgState.folder.length} 张, 间隔 ${savedInterval()} 秒 🎠`
-      : "未选择文件夹";
+    setText(folderInfo, bgState.folder && bgState.folder.length ? uiMessage("轮播中: {0} 张, 间隔 {1} 秒 🎠", bgState.folder.length, savedInterval()) : uiMessage("未选择文件夹"));
   }
   const intervalInput = pop.querySelector('input[type="number"]');
   if (intervalInput) intervalInput.value = savedInterval();

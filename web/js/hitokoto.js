@@ -1,3 +1,4 @@
+import { m as uiMessage, setAttribute } from "./i18n.js";
 // ============================================================
 // 一言 (数据来源 hitokoto.cn): 标题栏随机句子
 //   自动切换时间与背景图片切换间隔同步 (background.effectiveIntervalSec):
@@ -19,7 +20,7 @@ async function refresh() {
     if (!d.text) return;
     const src = [d.from, d.from_who].filter(Boolean).join(" · ");
     box.textContent = `「${d.text}」`;
-    box.title = (src ? `${src}\n` : "") + "一言 · 点击换一句";
+    setAttribute(box, "title", uiMessage((src ? `${src}\n` : "") + "一言 · 点击换一句"));
     // 重新触发入场动画
     box.classList.remove("swap");
     void box.offsetWidth;

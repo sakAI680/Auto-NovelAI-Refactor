@@ -1,3 +1,4 @@
+import { m as uiMessage } from "../i18n.js";
 // ============================================================
 // 图片网格画廊: 选中 / 双击放大
 // ============================================================
@@ -14,12 +15,12 @@ export function gallery(container, images, { onSelect, zoomOnClick = false } = {
   const n = images ? images.length : 0;
   if (n >= 1 && n <= 4) container.classList.add("count-" + n);
   if (!images || images.length === 0) {
-    container.append(el("div", { class: "gallery-empty", text: "🌸 还没有图片, 去生成一张吧~" }));
+    container.append(el("div", { class: "gallery-empty", text: uiMessage("🌸 还没有图片, 去生成一张吧~") }));
     return;
   }
   images.forEach((path) => {
     const name = path.split("/").pop();
-    const viewBtn = el("div", { class: "gallery-zoom", title: "全窗口查看" }, [el("span", { text: "🔍" })]);
+    const viewBtn = el("div", { class: "gallery-zoom", title: uiMessage("全窗口查看") }, [el("span", { text: "🔍" })]);
     viewBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       openLightbox(imageUrl(path), name);

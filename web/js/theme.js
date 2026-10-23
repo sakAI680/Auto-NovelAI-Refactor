@@ -1,3 +1,4 @@
+import { m as uiMessage, setAttribute, textNode } from "./i18n.js";
 // ============================================================
 // 主题管理: 亮色/暗色切换 + 自定义主题色 + 模糊度调节
 // 持久化到后端 outputs/bg_state.json (跨浏览器保留), localStorage 作兜底
@@ -166,7 +167,7 @@ export function initFullscreenUI() {
   const sync = () => {
     const on = !!document.fullscreenElement;
     btn.innerHTML = on ? FS_ICON_SHRINK : FS_ICON_EXPAND;
-    btn.title = on ? "退出全屏" : "全屏显示";
+    setAttribute(btn, "title", on ? uiMessage("退出全屏") : uiMessage("全屏显示"));
     btn.setAttribute("aria-label", btn.title);
   };
   btn.addEventListener("click", () => {
@@ -215,10 +216,10 @@ let popoverEl = null;
 function getPopover() {
   if (popoverEl) return popoverEl;
   const pop = el("div", { class: "bg-popover appearance-popover hidden", id: "appearance-popover" });
-  pop.append(el("div", { class: "bg-title", text: "🎨 外观设置" }));
+  pop.append(el("div", { class: "bg-title", text: uiMessage("🎨 外观设置") }));
 
   // ---- 主题色预设 ----
-  const presetBox = el("div", { class: "field" }, [el("label", { text: "主题色预设" })]);
+  const presetBox = el("div", { class: "field" }, [el("label", { text: uiMessage("主题色预设") })]);
   const swatchRow = el("div", { class: "color-presets" });
   PRESETS.forEach((p, i) => {
     const sw = el("button", {
@@ -236,7 +237,7 @@ function getPopover() {
     });
     swatchRow.append(sw);
   });
-  const customSw = el("button", { class: "color-swatch color-swatch-custom", type: "button", title: "自定义颜色" });
+  const customSw = el("button", { class: "color-swatch color-swatch-custom", type: "button", title: uiMessage("自定义颜色") });
   customSw.addEventListener("click", () => {
     const primary = pop.querySelector("#color-primary");
     const accent = pop.querySelector("#color-accent");
@@ -252,15 +253,15 @@ function getPopover() {
   // ---- 自定义颜色 ----
   const colorRow = el("div", { class: "color-row" });
   const primaryWrap = el("label", { class: "color-input-wrap" }, [
-    document.createTextNode("主题色"),
+    textNode(uiMessage("主题色")),
     el("input", { type: "color", id: "color-primary", value: "#8b5cf6" }),
   ]);
   const accentWrap = el("label", { class: "color-input-wrap" }, [
-    document.createTextNode("点缀色"),
+    textNode(uiMessage("点缀色")),
     el("input", { type: "color", id: "color-accent", value: "#ec4899" }),
   ]);
   colorRow.append(primaryWrap, accentWrap);
-  pop.append(el("div", { class: "field" }, [el("label", { text: "自定义颜色" }), colorRow]));
+  pop.append(el("div", { class: "field" }, [el("label", { text: uiMessage("自定义颜色") }), colorRow]));
 
   const primaryInput = primaryWrap.querySelector("input");
   const accentInput = accentWrap.querySelector("input");
@@ -287,7 +288,7 @@ function getPopover() {
   pop.append(blurBgWrap.node);
 
   // ---- 操作 ----
-  const resetBtn = el("button", { class: "btn btn-sm btn-danger", text: "♻️ 恢复默认外观" });
+  const resetBtn = el("button", { class: "btn btn-sm btn-danger", text: uiMessage("♻️ 恢复默认外观") });
   resetBtn.addEventListener("click", () => {
     applyColor(null);
     applyBlur(4);
@@ -307,7 +308,7 @@ function sliderRow(label, id, min, max, value) {
   const input = el("input", { type: "range", id, min, max, step: 1, value });
   const val = el("span", { class: "blur-val" });
   const row = el("div", { class: "blur-row" }, [
-    el("label", { text: label }),
+    el("label", { text: uiMessage(label) }),
     input,
     val,
   ]);

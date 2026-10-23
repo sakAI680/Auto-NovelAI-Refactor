@@ -1,3 +1,4 @@
+import { initI18n, m as uiMessage, setText, setAttribute, setHTML, textNode } from "./i18n.js";
 // ============================================================
 // 应用入口: 主题、日志、事件流、视图路由
 // ============================================================
@@ -44,6 +45,7 @@ export function setAppState(next) { appState = next; }
 // 自定义背景逻辑已移至 ./background.js
 
 async function boot() {
+  initI18n();
   initTheme();
   initEmoji();
   initFancySelects();
@@ -179,8 +181,7 @@ async function boot() {
       setTimeout(() => {
         window.close();
         // 部分浏览器不允许脚本关闭非脚本打开的页面: 兜底显示告别页
-        document.body.innerHTML =
-          '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;opacity:.75;">👋 已退出 Auto-NovelAI-Refactor, 可以关闭此页面了</div>';
+        setHTML(document.body, uiMessage('<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:18px;opacity:.75;">👋 已退出 Auto-NovelAI-Refactor, 可以关闭此页面了</div>'));
       }, 900);
     } else if (act === "restart") {
       const ok = await confirmDialog("确定要重启服务吗?\n连接将短暂断开, 后端恢复后页面会自动刷新。", { danger: true });
@@ -228,7 +229,7 @@ function ensureView(name) {
   return view.render(container, { app: appState, store: makeStore(name) }).catch((e) => {
     console.error(`view ${name} render error`, e);
     renderedViews.delete(name);
-    container.innerHTML = `<div class="card">视图 ${name} 渲染失败: ${e.message}</div>`;
+    setHTML(container, uiMessage("<div class=\"card\">视图 {0} 渲染失败: {1}</div>", name, uiMessage(e.message)));
   });
 }
 
@@ -254,7 +255,7 @@ function buildPluginNav(plugins) {
     ...(plugins || []).map((plugin) => {
       const item = el("a", { class: "nav-item", "data-view": `plugin-${plugin.name}` }, [
         el("span", { class: "nav-icon", text: plugin.icon || "🧩" }),
-        document.createTextNode(plugin.title || plugin.name),
+        textNode(uiMessage(plugin.title || plugin.name)),
       ]);
       item.addEventListener("click", () => showView(item.dataset.view));
       return item;
@@ -328,7 +329,7 @@ let lastTitleBusy = null;
 function updateTitle(busy) {
   if (busy === lastTitleBusy) return;
   lastTitleBusy = busy;
-  document.title = busy ? `${BASE_TITLE} 任务运行中...` : idleTitle();
+  setAttribute(document, "title", busy ? uiMessage("{0} 任务运行中...", BASE_TITLE) : uiMessage(idleTitle()));
 }
 
 let lastJobText = null;
@@ -361,7 +362,7 @@ function updateJobStatus() {
   // 每 2 秒轮询都重写会让状态栏 emoji 反复重绘闪动 (twemoji 解析后 textContent 也不等于原文, 用变量记忆比较)
   if (status !== lastJobText) {
     lastJobText = status;
-    node.textContent = status;
+    setText(node, busy ? uiMessage(parts.map((_, i) => `{${i}}`).join(" · "), ...parts.map((part) => uiMessage(part))) : uiMessage(status));
   }
   node.classList.toggle("busy", busy);
   updateTitle(busy);
@@ -469,7 +470,7 @@ function renderCharmToggle() {
   if (!btn) return;
   btn.innerHTML = charmEnabled ? CHARM_ICON_ON : CHARM_ICON_OFF;
   btn.classList.toggle("off", !charmEnabled);
-  btn.title = charmEnabled ? "隐藏晴天娃娃" : "显示晴天娃娃";
+  setAttribute(btn, "title", charmEnabled ? uiMessage("隐藏晴天娃娃") : uiMessage("显示晴天娃娃"));
   btn.setAttribute("aria-label", btn.title);
 }
 
@@ -770,7 +771,7 @@ function sayCharmLine() {
   const bubble = document.getElementById("charm-bubble");
   const charm = document.getElementById("sidebar-charm");
   if (!bubble || !charm || charm.hidden) return;
-  bubble.textContent = pickCharmLine();
+  setText(bubble, uiMessage(pickCharmLine()));
   bubble.classList.remove("hidden");
   placeCharmBubble(bubble, charm);
   if (charmBubbleTimer) clearTimeout(charmBubbleTimer);
@@ -1058,22 +1059,22 @@ function buildCharmEggWord(set) {
     el.style.fontSize = charmEggRand(5, 9).toFixed(2) + "rem";
     el.style.fontWeight = "900";
     el.style.zIndex = 100;
-    el.textContent = charmEggPick(CHARM_EGG_WORDS_BIG);
+    setText(el, uiMessage(charmEggPick(CHARM_EGG_WORDS_BIG)));
   } else if (r > set.cutMid) {
     el.style.fontSize = charmEggRand(2.5, 4.5).toFixed(2) + "rem";
     el.style.fontWeight = "bold";
     el.style.zIndex = 50;
-    el.textContent = charmEggPick(Math.random() < 0.75 ? CHARM_EGG_WORDS_MID : CHARM_EGG_WORDS_BIG);
+    setText(el, uiMessage(charmEggPick(Math.random() < 0.75 ? CHARM_EGG_WORDS_MID : CHARM_EGG_WORDS_BIG)));
   } else if (r > set.cutSmall) {
     el.style.fontSize = charmEggRand(1.2, 2.7).toFixed(2) + "rem";
     el.style.fontWeight = "600";
     el.style.zIndex = 10;
-    el.textContent = charmEggPick(Math.random() < 0.7 ? CHARM_EGG_WORDS_MID : CHARM_EGG_WORDS_SMALL);
+    setText(el, uiMessage(charmEggPick(Math.random() < 0.7 ? CHARM_EGG_WORDS_MID : CHARM_EGG_WORDS_SMALL)));
   } else {
     el.style.fontSize = charmEggRand(0.8, 1.6).toFixed(2) + "rem";
     el.style.fontWeight = "400";
     el.style.zIndex = 1;
-    el.textContent = charmEggPick(CHARM_EGG_WORDS_SMALL);
+    setText(el, uiMessage(charmEggPick(CHARM_EGG_WORDS_SMALL)));
   }
   return el;
 }
@@ -1400,7 +1401,7 @@ function initSidebarResize() {
   if (collapseBtn) {
     collapseBtn.addEventListener("click", () => {
       const collapsed = sidebar.classList.toggle("collapsed");
-      collapseBtn.textContent = collapsed ? "▶" : "◀ 收起";
+      setText(collapseBtn, collapsed ? uiMessage("▶") : uiMessage("◀ 收起"));
       if (collapsed) {
         sidebar.dataset.prevWidth = sidebar.offsetWidth;
         sidebar.style.width = "50px";

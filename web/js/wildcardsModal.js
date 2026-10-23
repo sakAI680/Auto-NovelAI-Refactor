@@ -1,3 +1,4 @@
+import { m as uiMessage, setText } from "./i18n.js";
 // ============================================================
 // Wildcards 全屏编辑弹窗:
 //   顶部: 提示词标签块编辑器 (参考 sd-webui-prompt-all-in-one)
@@ -93,17 +94,17 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
   const box = el("div", { class: "wc-modal-box" });
 
   // ---- 头部 ----
-  const closeBtn = el("button", { class: "btn btn-sm btn-danger", type: "button", text: "✖ 关闭" });
+  const closeBtn = el("button", { class: "btn btn-sm btn-danger", type: "button", text: uiMessage("✖ 关闭") });
   const header = el("div", { class: "wc-modal-header" }, [
     el("div", { class: "wc-modal-title" }, [
       "🃏 Wildcards",
-      el("span", { class: "wc-modal-sub", text: title }),
+      el("span", { class: "wc-modal-sub", text: uiMessage(title) }),
     ]),
     closeBtn,
   ]);
 
   // ---- 顶部: 提示词标签块编辑器 (双模式) ----
-  const ta = el("textarea", { rows: 6, placeholder: source.placeholder || "在此输入提示词..." });
+  const ta = el("textarea", { rows: 6, placeholder: uiMessage(source.placeholder || "在此输入提示词...") });
   ta.value = initialValue;
   const taBox = el("div", { class: "ta-box hidden" }, [ta]);
   const chipsView = el("div", { class: "prompt-chips" });
@@ -113,16 +114,16 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
   const addSelBtn = el("button", {
     class: "btn btn-sm btn-primary",
     type: "button",
-    text: "➕ 添加选中",
+    text: uiMessage("➕ 添加选中"),
     disabled: true,
-    title: "把下方库中选中的项批量加入提示词 (卡片库: 点击卡片选中/取消, 可跨分类, 双击编辑, 也可直接拖入; 提示词库: 点击标签多选)",
+    title: uiMessage("把下方库中选中的项批量加入提示词 (卡片库: 点击卡片选中/取消, 可跨分类, 双击编辑, 也可直接拖入; 提示词库: 点击标签多选)"),
   });
   const weightModeBtn = el("button", {
     class: "btn btn-sm",
     type: "button",
-    title: "切换权重模式 — 影响 ▲▼ 加减权重与新增权重的写法\n新版权重: 1.5::标签:: (NovelAI 新语法)\n通用权重: (标签:1.5) (通用语法)",
+    title: uiMessage("切换权重模式 — 影响 ▲▼ 加减权重与新增权重的写法\n新版权重: 1.5::标签:: (NovelAI 新语法)\n通用权重: (标签:1.5) (通用语法)"),
   });
-  const refreshWeightModeBtn = () => { weightModeBtn.textContent = weightMode === "nai" ? "⚖️ 新版权重" : "⚖️ 通用权重"; };
+  const refreshWeightModeBtn = () => { setText(weightModeBtn, weightMode === "nai" ? uiMessage("⚖️ 新版权重") : uiMessage("⚖️ 通用权重")); };
   weightModeBtn.addEventListener("click", () => {
     weightMode = weightMode === "nai" ? "paren" : "nai";
     try { localStorage.setItem(WEIGHT_MODE_KEY, weightMode); } catch { /* 存不进去也不影响本次会话 */ }
@@ -133,22 +134,22 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
   const clearSelBtn = el("button", {
     class: "btn btn-sm",
     type: "button",
-    text: "✖ 清除选择",
+    text: uiMessage("✖ 清除选择"),
     disabled: true,
-    title: "清除当前库中选中的项 (卡片/提示词)",
+    title: uiMessage("清除当前库中选中的项 (卡片/提示词)"),
   });
-  const modeBtn = el("button", { class: "btn btn-sm", type: "button", text: "✏️ 文本编辑", title: "在 标签块视图 / 文本输入 之间切换 (手动输入保留)" });
+  const modeBtn = el("button", { class: "btn btn-sm", type: "button", text: uiMessage("✏️ 文本编辑"), title: uiMessage("在 标签块视图 / 文本输入 之间切换 (手动输入保留)") });
   const translateBtn = el("button", {
     class: "btn btn-sm",
     type: "button",
-    text: "🌐 翻译",
-    title: "在线翻译没有译文的标签 (多源免费接口: 爱词霸/搜狗/阿里/有道/彩云/腾讯/Google 等自动切换, 结果缓存)",
+    text: uiMessage("🌐 翻译"),
+    title: uiMessage("在线翻译没有译文的标签 (多源免费接口: 爱词霸/搜狗/阿里/有道/彩云/腾讯/Google 等自动切换, 结果缓存)"),
   });
 
   const promptSec = el("div", { class: "wc-modal-prompt" }, [
     el("div", { class: "wc-modal-prompt-head" }, [
       el("span", { class: "wc-modal-prompt-label", text: "📝 " + title }),
-      el("span", { class: "muted wc-prompt-hint", text: "编辑实时同步回原输入框, 可直接生成" }),
+      el("span", { class: "muted wc-prompt-hint", text: uiMessage("编辑实时同步回原输入框, 可直接生成") }),
       el("span", { class: "spacer" }),
       weightModeBtn,
       addSelBtn,
@@ -196,7 +197,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
     clear(chipsView);
     const tags = splitTags(ta.value);
     if (!tags.length) {
-      chipsView.append(el("div", { class: "p-chips-empty", text: "提示词为空 — 点下方 ＋标签 直接输入 (回车添加); 双击空白切文本输入; 也可从卡片库点选 / 拖拽 / 点 \"添加选中\"" }));
+      chipsView.append(el("div", { class: "p-chips-empty", text: uiMessage("提示词为空 — 点下方 ＋标签 直接输入 (回车添加); 双击空白切文本输入; 也可从卡片库点选 / 拖拽 / 点 \"添加选中\"") }));
       chipsView.append(makeAddChip());   // 空提示词时也要能在标签视图里直接添加标签
       return;
     }
@@ -209,7 +210,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
 
   /** 末尾的 "＋标签" 块: 点击展开输入框, 回车添加标签 (参考 PAI 添加关键词, 支持自动补全) */
   function makeAddChip() {
-    const chip = el("div", { class: "p-chip p-chip-add", title: "添加标签", text: "＋ 标签" });
+    const chip = el("div", { class: "p-chip p-chip-add", title: uiMessage("添加标签"), text: uiMessage("＋ 标签") });
     chip.addEventListener("click", () => startAdd());
     return chip;
   }
@@ -217,7 +218,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
   function startAdd() {
     const anchor = chipsView.querySelector(".p-chip-add");
     const inputChip = el("div", { class: "p-chip p-chip-add-input" });
-    const input = el("input", { class: "p-chip-input", placeholder: "输入标签后回车 (可逗号分隔多个, Esc 取消)" });
+    const input = el("input", { class: "p-chip-input", placeholder: uiMessage("输入标签后回车 (可逗号分隔多个, Esc 取消)") });
     let done = false;
     const commit = () => {
       if (done) return;
@@ -310,7 +311,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
   function makeChip(raw, i) {
     const { content, weight } = parseWeight(raw);
     const zh = zhCache.get(zhKey(content)) || "";
-    const chip = el("div", { class: "p-chip", title: "拖动可排序; 双击编辑 (Esc 取消); 悬停显示操作按钮" }, [
+    const chip = el("div", { class: "p-chip", title: uiMessage("拖动可排序; 双击编辑 (Esc 取消); 悬停显示操作按钮") }, [
       el("div", { class: "p-chip-row" }, [
         el("span", { class: "p-chip-text", text: content }),
         weight !== 1 ? el("span", { class: "p-chip-w", text: "×" + weight }) : null,
@@ -334,10 +335,10 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
       $$(".p-chip.drop-before", chipsView).forEach((c) => c.classList.remove("drop-before"));
     });
     const ops = el("div", { class: "p-chip-ops" }, [
-      el("span", { class: "p-op", title: "降低权重 (−0.1)", text: "▼", onclick: () => setWeight(i, -0.1) }),
-      el("span", { class: "p-op", title: "增加权重 (+0.1)", text: "▲", onclick: () => setWeight(i, +0.1) }),
-      el("span", { class: "p-op", title: "编辑", text: "✎", onclick: () => startEdit(i) }),
-      el("span", { class: "p-op p-op-danger", title: "删除", text: "×", onclick: () => removeTag(i) }),
+      el("span", { class: "p-op", title: uiMessage("降低权重 (−0.1)"), text: "▼", onclick: () => setWeight(i, -0.1) }),
+      el("span", { class: "p-op", title: uiMessage("增加权重 (+0.1)"), text: "▲", onclick: () => setWeight(i, +0.1) }),
+      el("span", { class: "p-op", title: uiMessage("编辑"), text: "✎", onclick: () => startEdit(i) }),
+      el("span", { class: "p-op p-op-danger", title: uiMessage("删除"), text: "×", onclick: () => removeTag(i) }),
     ]);
     // 加权按钮连点会被浏览器判为 dblclick; 操作按钮区域不触发编辑
     ops.addEventListener("dblclick", (e) => e.stopPropagation());
@@ -402,7 +403,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
     onlineTranslating = true;
     translateBtn.disabled = true;
     const oldText = translateBtn.textContent;
-    translateBtn.textContent = "⏳ 翻译中...";
+    setText(translateBtn, uiMessage("⏳ 翻译中..."));
     try {
       const res = await post("/api/translate", { tags });
       let n = 0;
@@ -425,7 +426,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
     mode = m;
     chipsView.classList.toggle("hidden", m !== "tags");
     taBox.classList.toggle("hidden", m !== "text");
-    modeBtn.textContent = m === "tags" ? "✏️ 文本编辑" : "🏷️ 标签视图";
+    setText(modeBtn, m === "tags" ? uiMessage("✏️ 文本编辑") : uiMessage("🏷️ 标签视图"));
     if (m === "tags") renderChips();
     else ta.focus();
   }
@@ -483,7 +484,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
     if (!addSelBtn.isConnected) return;
     const n = activeLib.lib === "prompts" ? promptSelection.tags.length : cardSelection.count();
     addSelBtn.disabled = !n;
-    addSelBtn.textContent = n ? `➕ 添加选中 (${n})` : "➕ 添加选中";
+    setText(addSelBtn, n ? uiMessage("➕ 添加选中 ({0})", n) : uiMessage("➕ 添加选中"));
     clearSelBtn.disabled = !n;
   }
   cardSelection.onChange(refreshSelBtns);
@@ -513,7 +514,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
 
   // ---- 下方: Wildcards 面板全部功能 ----
   const body = el("div", { class: "wc-modal-body" });
-  body.append(el("div", { class: "muted wc-modal-loading", text: "🌸 正在加载 Wildcards..." }));
+  body.append(el("div", { class: "muted wc-modal-loading", text: uiMessage("🌸 正在加载 Wildcards...") }));
 
   // 卡片面板的 "添加到当前输入框": 以弹窗输入框为准, 写回后同步原输入框并刷新标签块
   const addTarget = {
@@ -549,7 +550,7 @@ export function openWildcardsModal(source, { title = "提示词" } = {}) {
 
   renderPanel(body, { app: appState || null }, { addTarget }).catch((e) => {
     clear(body);
-    body.append(el("div", { class: "card" }, [el("div", { class: "muted", text: "Wildcards 加载失败: " + e.message })]));
+    body.append(el("div", { class: "card" }, [el("div", { class: "muted", text: uiMessage("Wildcards 加载失败: {0}", uiMessage(e.message)) })]));
   });
   setMode("tags");
 }

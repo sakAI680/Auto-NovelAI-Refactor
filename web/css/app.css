@@ -3101,3 +3101,7 @@ body.has-custom-bg input[type="range"]::-moz-range-track {
 .queue-empty { padding: 18px 8px; text-align: center; font-size: 13px; opacity: 0.65; }
 .queue-clear-row { display: flex; justify-content: flex-end; margin-top: 4px; }
 
+/* A compact language control, including the existing custom select renderer. */
+.ui-language-picker { flex: 0 0 106px; }
+.ui-language-picker .fs-wrap { width: 106px; }
+.ui-language-picker .fs-control { min-height: 30px; padding: 4px 8px; }

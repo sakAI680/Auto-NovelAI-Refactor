@@ -1,3 +1,4 @@
+import { m as uiMessage, setText, textNode } from "../i18n.js";
 // ============================================================
 // 图片筛选视图
 // ============================================================
@@ -15,37 +16,37 @@ export async function render(container, ctx) {
   S = ctx;
   clear(container);
   container.append(
-    el("h2", {}, ["🗂️ 图片筛选", el("span", { class: "sub", text: "批量浏览并整理图片" })]),
+    el("h2", {}, [uiMessage("🗂️ 图片筛选"), el("span", { class: "sub", text: uiMessage("批量浏览并整理图片") })]),
   );
 
   const inCard = el("div", { class: "card" }, [
-    el("div", { class: "card-title" }, ["📂 输入"]),
+    el("div", { class: "card-title" }, [uiMessage("📂 输入")]),
   ]);
-  const pathInput = el("input", { type: "text", placeholder: "图片目录路径, 例如: D:/images", style: "flex:1;min-width:0;" });
+  const pathInput = el("input", { type: "text", placeholder: uiMessage("图片目录路径, 例如: D:/images"), style: "flex:1;min-width:0;" });
   const pathBtn = folderPickButton(pathInput, { onPicked: (p) => selectorAction("/api/selector/load", { path: p }) });
-  loadBtn = el("button", { class: "btn btn-primary btn-sm", text: "🔄 加载图片" });
-  const dir1 = el("input", { type: "text", placeholder: "目录1 (移动/复制到此)", style: "flex:1;min-width:0;" });
-  const dir2 = el("input", { type: "text", placeholder: "目录2 (移动/复制到此)", style: "flex:1;min-width:0;" });
+  loadBtn = el("button", { class: "btn btn-primary btn-sm", text: uiMessage("🔄 加载图片") });
+  const dir1 = el("input", { type: "text", placeholder: uiMessage("目录1 (移动/复制到此)"), style: "flex:1;min-width:0;" });
+  const dir2 = el("input", { type: "text", placeholder: uiMessage("目录2 (移动/复制到此)"), style: "flex:1;min-width:0;" });
   const dir1Btn = folderPickButton(dir1, { text: "📁", title: "选择目录1" });
   const dir2Btn = folderPickButton(dir2, { text: "📁", title: "选择目录2" });
   inCard.append(
     el("div", { style: "display:flex;gap:8px;margin-bottom:10px;" }, [pathInput, pathBtn, loadBtn]),
     el("div", { class: "grid grid-2" }, [
-      el("div", { class: "field" }, [el("label", { text: "目录1" }), el("div", { style: "display:flex;gap:8px;" }, [dir1, dir1Btn])]),
-      el("div", { class: "field" }, [el("label", { text: "目录2" }), el("div", { style: "display:flex;gap:8px;" }, [dir2, dir2Btn])]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("目录1") }), el("div", { style: "display:flex;gap:8px;" }, [dir1, dir1Btn])]),
+      el("div", { class: "field" }, [el("label", { text: uiMessage("目录2") }), el("div", { style: "display:flex;gap:8px;" }, [dir2, dir2Btn])]),
     ]),
   );
 
   const mainCard = el("div", { class: "card", style: "margin:0;" }, [
-    el("div", { class: "card-title" }, ["🖼️ 预览"]),
+    el("div", { class: "card-title" }, [uiMessage("🖼️ 预览")]),
   ]);
-  previewEl = el("div", { style: "text-align:center;min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--text-2);", text: "加载目录后显示图片" });
+  previewEl = el("div", { style: "text-align:center;min-height:300px;display:flex;align-items:center;justify-content:center;color:var(--text-2);", text: uiMessage("加载目录后显示图片") });
   infoEl = el("div", { class: "info-box", style: "margin-top:10px;" });
   mainCard.append(previewEl, infoEl);
 
   // 操作按钮
   const actCard = el("div", { class: "card" }, [
-    el("div", { class: "card-title" }, ["🎛️ 操作"]),
+    el("div", { class: "card-title" }, [uiMessage("🎛️ 操作")]),
   ]);
   const actions = el("div", { style: "display:flex;flex-direction:column;gap:8px;" });
   const dirAction = (url, input) => {
@@ -63,7 +64,7 @@ export async function render(container, ctx) {
     ["🗑️ 删除", () => selectorAction("/api/selector/delete", { current: currentPath }), true],
   ];
   btnDefs.forEach(([text, fn, danger]) => {
-    actions.append(el("button", { class: "btn btn-sm" + (danger ? " btn-danger" : ""), style: "width:100%;min-height:40px;font-size:14px;", text, onclick: fn }));
+    actions.append(el("button", { class: "btn btn-sm" + (danger ? " btn-danger" : ""), style: "width:100%;min-height:40px;font-size:14px;", text: uiMessage(text), onclick: fn }));
   });
   actCard.append(actions);
 
@@ -95,17 +96,17 @@ async function selectorAction(url, payload) {
       clear(previewEl);
       const pic = el("img", {
         src: imageUrl(res.current),
-        alt: "当前图片",
-        title: "单击放大查看",
+        alt: uiMessage("当前图片"),
+        title: uiMessage("单击放大查看"),
         style: "max-width:100%;max-height:640px;border-radius:var(--radius-sm);box-shadow:var(--shadow);cursor:zoom-in;",
       });
       pic.addEventListener("click", zoomCurrent);
       previewEl.append(pic);
-      infoEl.textContent = "当前: " + res.current;
+      setText(infoEl, uiMessage("当前: {0}", res.current));
     } else {
       currentPath = null;
       clear(previewEl);
-      previewEl.append(document.createTextNode("已浏览完所有图片 🎉"));
+      previewEl.append(textNode(uiMessage("已浏览完所有图片 🎉")));
       infoEl.textContent = "";
     }
   } catch (e) {
